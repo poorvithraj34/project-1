@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Launchpad browser regression checks</title>
+  <style>
+    body { max-width: 760px; margin: 40px auto; padding: 0 20px; color: #202622; background: #f7f7f2; font: 15px/1.5 system-ui, sans-serif; }
+    li { margin: 7px 0; }
+    .pass { color: #38551e; }
+    .fail { color: #a43e30; }
+  </style>
+</head>
+<body>
+  <h1>Launchpad interview engine checks</h1>
+  <p id="summary">Running checks…</p>
+  <ol id="results"></ol>
+  <script src="interview-engine.js"></script>
+  <script>
+    const results = [];
+    function check(name, assertion) {
+      try {
+        if (!assertion()) throw new Error("Assertion failed");
+        results.push({ name, passed: true });
+      } catch (error) {
+        results.push({ name, passed: false, error: error.message });
+      }
+    }
+    const engine = window.LaunchpadInterview;
+    const repeatRandom = () => .5;
+    const mixed = engine.selectQuestions({ role: "Custom role", category: "Mixed", difficulty: "All levels", count: 15, random: repeatRandom });
+    const question = engine.questions.find(item => item.id === "dsa-arrays");
+    const strongAnswer = "I scan each item once and track the largest value seen so far. The scan performs n iterations, so time is O(n), and the extra space is O(1). For example, I update the maximum when the current value is larger.";
+    const strongEvaluation = engine.evaluateAnswer(question, strongAnswer);
+    const weakEvaluation = engine.evaluateAnswer(question, "I would try a solution.");
+    const allIds = engine.questions.map(item => item.id);
+    const session = {
+      id: "test-session", role: "Software Developer", category: "Mixed", difficulty: "All levels",
+      startedAt: Date.now() - 5000, questions: [question], answers: [strongAnswer],
+      evaluations: [strongEvaluation]
+    };
+    const summary = engine.summarizeSession(session);
+    check("Question bank contains all requested interview areas", () => ["Technical", "DSA", "Web Development", "Aptitude", "HR/Behavioral"].every(category => engine.questions.some(item => item.category === category)));
+    check("Mixed interview selects the requested number without duplicates", () => mixed.length === 15 && new Set(mixed.map(item => item.id)).size === 15);
+    check("Role, category, and difficulty filters are applied", () => engine.selectQuestions({ role: "AI Engineer", category: "DSA", difficulty: "Advanced", count: 5, random: repeatRandom }).every(item => item.roles.includes("AI Engineer") && item.category === "DSA" && item.difficulty === "Advanced"));
+    check("Question selection prefers questions not used in previous sessions", () => engine.selectQuestions({ role: "Custom role", category: "Mixed", difficulty: "All levels", count: 1, previousIds: allIds.slice(0, -1), random: repeatRandom })[0]?.id === allIds.at(-1));
+    check("Rule-based answer evaluation returns bounded weighted scores", () => strongEvaluation.score > weakEvaluation.score && strongEvaluation.score <= 100 && strongEvaluation.score >= 0 && Object.keys(strongEvaluation.dimensions).length === 5);
+    check("Empty answers receive zero and expose missing concepts", () => engine.evaluateAnswer(question, "").score === 0 && engine.evaluateAnswer(question, "").missing.length > 0);
+    check("Interview summary calculates scores and topics from saved evaluations", () => summary.score === strongEvaluation.score && summary.answered === 1 && summary.topicScores[question.topic] === strongEvaluation.score);
+    check("Adaptive score uses only available persisted evidence", () => engine.adaptiveScore({ progress: 50 }) === 50 && engine.adaptiveScore({ progress: 50, practiceAccuracy: 100, interviewScore: 100 }) === 75);
+    document.getElementById("results").innerHTML = results.map(item => `<li class="${item.passed ? "pass" : "fail"}">${item.passed ? "PASS" : "FAIL"} — ${item.name}${item.error ? `: ${item.error}` : ""}</li>`).join("");
+    const passed = results.filter(item => item.passed).length;
+    document.getElementById("summary").textContent = `${passed}/${results.length} checks passed.`;
+    if (passed !== results.length) throw new Error("One or more Launchpad interview engine checks failed.");
+  </script>
+</body>
+</html>

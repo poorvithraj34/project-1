@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f7f2">
+  <title>Launchpad — Your placement season, mapped</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f7f7f2;
+      --white: #fff;
+      --ink: #202622;
+      --muted: #777e77;
+      --line: #e9ebe4;
+      --green: #c6f36a;
+      --green-dark: #38551e;
+      --navy: #222d32;
+      --coral: #f5a38d;
+      --lavender: #ded7ff;
+      --yellow: #f7d776;
+      --shadow: 0 12px 36px rgba(37, 45, 39, .055);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper); }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 244px minmax(0, 1fr); }
+    .sidebar {
+      background: var(--navy); color: #f8f9f5; padding: 25px 17px 18px;
+      display: flex; flex-direction: column; min-height: 100vh; position: sticky; top: 0; height: 100vh;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 2px 10px 34px; font-weight: 750; font-size: 19px; letter-spacing: -.7px; }
+    .brand-mark { width: 29px; height: 29px; display: grid; place-items: center; border-radius: 10px 10px 10px 3px; color: #26351d; background: var(--green); font-size: 17px; font-weight: 900; }
+    .workspace { margin: 0 8px 25px; padding: 12px; border: 1px solid #404b4f; border-radius: 12px; display: flex; gap: 10px; align-items: center; }
+    .avatar { display: grid; place-items: center; flex: 0 0 33px; height: 33px; border-radius: 11px; color: #293129; background: #f0c6aa; font-size: 12px; font-weight: 750; }
+    .workspace small, .workspace strong { display: block; }
+    .workspace small { color: #aab3ad; font-size: 10px; margin-bottom: 3px; }
+    .workspace strong { font-size: 12px; font-weight: 600; }
+    .nav-label { padding: 0 11px 9px; color: #889493; font-size: 9px; font-weight: 750; letter-spacing: 1.25px; text-transform: uppercase; }
+    .nav { display: grid; gap: 4px; }
+    .nav button { border: 0; border-radius: 9px; padding: 10px 11px; display: flex; align-items: center; gap: 12px; color: #bdc6c0; background: transparent; text-align: left; font-size: 12px; transition: .18s; }
+    .nav button:hover { color: white; background: #303c40; }
+    .nav button.active { color: #26351d; background: var(--green); font-weight: 700; }
+    .nav-icon { width: 17px; font-size: 15px; text-align: center; }
+    .side-bottom { margin-top: auto; }
+    .streak { margin: 0 7px 15px; padding: 15px; border-radius: 13px; background: #303b3f; }
+    .streak-top { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 650; }
+    .streak-top span:last-child { font-size: 18px; }
+    .streak p { margin: 8px 0 0; color: #b5bfba; font-size: 10px; line-height: 1.5; }
+    .settings { color: #aeb9b2 !important; }
+    main { min-width: 0; padding: 0 42px 55px; max-width: 1600px; width: 100%; margin: 0 auto; }
+    .topbar { height: 76px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+    .breadcrumb { color: var(--muted); font-size: 11px; }
+    .breadcrumb strong { color: var(--ink); font-weight: 650; }
+    .top-actions { display: flex; align-items: center; gap: 18px; }
+    .icon-button { width: 34px; height: 34px; position: relative; border: 1px solid var(--line); border-radius: 11px; color: #3d4640; background: white; }
+    .notification-dot { position: absolute; top: 7px; right: 7px; width: 6px; height: 6px; border: 1px solid white; border-radius: 50%; background: #ef836b; }
+    .top-profile { display: flex; gap: 8px; align-items: center; font-size: 11px; font-weight: 650; }
+    .top-profile .avatar { width: 29px; height: 29px; flex-basis: 29px; font-size: 10px; }
+    .mobile-menu { display: none; }
+    .welcome { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; padding: 31px 0 22px; }
+    .eyebrow { color: #7c876e; font-size: 10px; font-weight: 750; letter-spacing: 1.2px; text-transform: uppercase; }
+    h1 { margin: 7px 0 6px; font-size: clamp(25px, 3vw, 34px); line-height: 1.16; letter-spacing: -1.3px; }
+    .welcome p { margin: 0; color: var(--muted); font-size: 12px; }
+    .welcome p strong { color: var(--ink); font-weight: 650; }
+    .week-pill { padding: 9px 12px; display: flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 9px; color: #586157; background: white; font-size: 10px; white-space: nowrap; }
+    .week-pill span { color: #82915f; }
+    .hero {
+      padding: 23px 25px; position: relative; overflow: hidden; min-height: 196px; display: grid;
+      grid-template-columns: minmax(0, 1fr) 190px; align-items: center; gap: 20px;
+      border-radius: 18px; color: white; background: var(--navy);
+    }
+    .hero:after { content: ""; position: absolute; width: 240px; height: 240px; right: 110px; top: -130px; border: 1px solid rgba(255,255,255,.1); border-radius: 50%; box-shadow: 0 0 0 25px rgba(255,255,255,.025), 0 0 0 50px rgba(255,255,255,.025); }
+    .hero-copy { z-index: 1; }
+    .hero-kicker { display: inline-flex; align-items: center; gap: 6px; color: #d0f394; font-size: 9px; font-weight: 750; letter-spacing: .9px; text-transform: uppercase; }
+    .hero h2 { max-width: 560px; margin: 10px 0 7px; font-size: 23px; line-height: 1.2; letter-spacing: -.6px; }
+    .hero p { max-width: 540px; margin: 0; color: #bdc8c0; font-size: 11px; line-height: 1.65; }
+    .hero p strong { color: white; font-weight: 650; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 17px; }
+    .primary-button, .ghost-button { padding: 10px 13px; border-radius: 9px; font-size: 10px; font-weight: 700; transition: transform .15s, background .15s; }
+    .primary-button { color: #27341f; border: 1px solid var(--green); background: var(--green); }
+    .primary-button:hover { transform: translateY(-1px); background: #d3fa8d; }
+    .ghost-button { color: #f4f7f0; border: 1px solid #546064; background: transparent; }
+    .ghost-button:hover { background: #303c40; }
+    .readiness { z-index: 1; text-align: center; }
+    .ring { width: 112px; height: 112px; margin: 0 auto 8px; position: relative; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--green) var(--angle, 0deg), #455154 0); }
+    .ring:before { content: ""; position: absolute; inset: 8px; border-radius: 50%; background: var(--navy); }
+    .ring-inner { z-index: 1; }
+    .ring-inner strong { display: block; font-size: 27px; letter-spacing: -1px; }
+    .ring-inner span { color: #aeb9b1; font-size: 9px; }
+    .readiness > span { color: #c0c9c2; font-size: 10px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 15px 0 23px; }
+    .stat { padding: 14px 15px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+    .stat-top { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 9px; }
+    .stat-icon { width: 23px; height: 23px; display: grid; place-items: center; border-radius: 7px; font-size: 12px; }
+    .stat strong { display: block; margin: 7px 0 3px; font-size: 20px; letter-spacing: -.7px; }
+    .stat small { color: var(--muted); font-size: 9px; }
+    .positive { color: #598337 !important; }
+    .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(245px, .85fr); gap: 15px; align-items: start; }
+    .left-column, .right-column { display: grid; gap: 15px; min-width: 0; }
+    .card { border: 1px solid var(--line); border-radius: 13px; background: white; }
+    .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 16px 17px 12px; }
+    .card-head h3 { margin: 0; font-size: 13px; letter-spacing: -.2px; }
+    .card-head p { margin: 4px 0 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
+    .text-link { padding: 3px 0; border: 0; color: #668446; background: none; font-size: 9px; font-weight: 700; white-space: nowrap; }
+    .text-link:hover { text-decoration: underline; }
+    .stage-label { padding: 5px 8px; border-radius: 20px; color: #596b38; background: #f0f6df; font-size: 8px; font-weight: 750; white-space: nowrap; }
+    .roadmap { padding: 3px 17px 16px; }
+    .roadmap-progress { display: flex; justify-content: space-between; margin: 2px 0 8px; color: var(--muted); font-size: 9px; }
+    .progress-track { height: 5px; overflow: hidden; border-radius: 5px; background: #edf0e9; }
+    .progress-fill { width: 0%; height: 100%; border-radius: inherit; background: #a3d454; transition: width .35s; }
+    .stages { display: grid; grid-template-columns: repeat(4, 1fr); margin: 17px 0 16px; }
+    .stage { position: relative; padding-right: 6px; }
+    .stage:not(:last-child):after { content: ""; position: absolute; left: 27px; right: 0; top: 11px; height: 1px; background: #e5e9df; }
+    .stage-dot { z-index: 1; position: relative; width: 23px; height: 23px; display: grid; place-items: center; border: 1px solid #dfe4db; border-radius: 50%; color: #8a9187; background: white; font-size: 9px; }
+    .stage.done .stage-dot { border-color: #a9d86c; color: #456329; background: #e8f6d4; }
+    .stage.current .stage-dot { border: 2px solid #acd962; color: #334721; font-weight: 800; }
+    .stage strong { display: block; margin-top: 7px; font-size: 8px; font-weight: 650; white-space: nowrap; }
+    .stage small { display: block; margin-top: 3px; color: var(--muted); font-size: 8px; }
+    .tasks { display: grid; gap: 7px; }
+    .task { min-height: 43px; padding: 8px 10px; display: grid; grid-template-columns: 17px 1fr auto; gap: 9px; align-items: center; border: 1px solid #eef0ea; border-radius: 9px; transition: .16s; }
+    .task:hover { border-color: #d9e8c6; background: #fcfdf9; }
+    .task input { width: 14px; height: 14px; margin: 0; accent-color: #8cb84e; cursor: pointer; }
+    .task strong { display: block; font-size: 9px; font-weight: 650; }
+    .task small { display: block; margin-top: 3px; color: var(--muted); font-size: 8px; }
+    .task-time { color: #7b8379; font-size: 8px; white-space: nowrap; }
+    .skill-list { padding: 0 17px 16px; display: grid; gap: 13px; }
+    .skill-row { display: grid; grid-template-columns: 94px 1fr 28px; align-items: center; gap: 9px; }
+    .skill-name { display: flex; align-items: center; gap: 7px; color: #4b534c; font-size: 9px; }
+    .skill-name i { width: 19px; height: 19px; display: grid; place-items: center; border-radius: 6px; font-style: normal; font-size: 9px; }
+    .skill-track { height: 5px; overflow: hidden; border-radius: 4px; background: #eff1eb; }
+    .skill-track span { display: block; height: 100%; border-radius: inherit; background: #a3d454; }
+    .skill-percent { color: #646d63; font-size: 8px; text-align: right; }
+    .interview-card { overflow: hidden; color: white; border: 0; background: #4a5268; }
+    .interview-inner { padding: 16px 17px; position: relative; }
+    .interview-inner:after { content: "✳"; position: absolute; right: 13px; top: 30px; color: rgba(255,255,255,.12); font-size: 69px; line-height: 1; }
+    .interview-tag { color: #d6dbef; font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    .interview-card h3 { position: relative; z-index: 1; max-width: 220px; margin: 10px 0 6px; font-size: 15px; line-height: 1.3; }
+    .interview-card p { position: relative; z-index: 1; max-width: 240px; margin: 0; color: #e0e3eb; font-size: 9px; line-height: 1.5; }
+    .interview-meta { display: flex; gap: 12px; margin: 12px 0; color: #e2e4eb; font-size: 8px; }
+    .interview-card .primary-button { position: relative; z-index: 1; padding: 8px 11px; font-size: 9px; }
+    .cgpa-card { padding-bottom: 14px; }
+    .cgpa-body { padding: 0 17px; }
+    .cgpa-input-row { display: flex; gap: 7px; align-items: center; }
+    .cgpa-input-row input { width: 78px; padding: 8px 9px; border: 1px solid var(--line); border-radius: 8px; outline: none; font-size: 11px; }
+    .cgpa-input-row input:focus { border-color: #acd962; box-shadow: 0 0 0 3px #eff7e1; }
+    .cgpa-input-row span { color: var(--muted); font-size: 9px; }
+    .save-cgpa { padding: 8px 10px; border: 0; border-radius: 8px; color: #435e2d; background: #edf6dd; font-size: 9px; font-weight: 700; }
+    .cgpa-note { margin: 9px 0 0; color: var(--muted); font-size: 8px; line-height: 1.5; }
+    .achievement { padding: 0 17px 15px; }
+    .badge-row { display: flex; align-items: center; gap: 10px; }
+    .badge-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: #fff2d4; font-size: 19px; }
+    .badge-copy strong { display: block; font-size: 9px; }
+    .badge-copy small { display: block; margin-top: 4px; color: var(--muted); font-size: 8px; }
+    .badge-count { margin-left: auto; color: #9aa194; font-size: 8px; white-space: nowrap; }
+    .bottom-note { margin: 17px 0 0; color: #8b9188; font-size: 8px; text-align: center; }
+    .toast { position: fixed; right: 22px; bottom: 20px; z-index: 10; max-width: calc(100vw - 44px); padding: 11px 15px; border: 1px solid #3e4c42; border-radius: 10px; color: white; background: #28352d; box-shadow: var(--shadow); font-size: 11px; opacity: 0; transform: translateY(10px); pointer-events: none; transition: .22s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 20; padding: 20px; display: none; place-items: center; background: rgba(22,30,27,.55); }
+    .modal-backdrop.open { display: grid; }
+    .modal { width: min(480px, 100%); max-height: 90vh; overflow: auto; padding: 22px; border-radius: 16px; background: white; box-shadow: 0 25px 90px rgba(0,0,0,.2); }
+    .modal-head { display: flex; justify-content: space-between; gap: 15px; align-items: flex-start; }
+    .modal-head h2 { margin: 0; font-size: 19px; letter-spacing: -.5px; }
+    .modal-head p { margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .close-modal { width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 8px; color: #59625a; background: white; }
+    .question-box { margin: 19px 0 12px; padding: 15px; border-radius: 11px; color: #f7f7f3; background: #303b40; font-size: 12px; line-height: 1.65; }
+    .modal textarea { width: 100%; min-height: 115px; resize: vertical; padding: 11px; border: 1px solid var(--line); border-radius: 9px; outline: none; font-size: 11px; line-height: 1.5; }
+    .modal textarea:focus, .modal input:focus { border-color: #acd962; box-shadow: 0 0 0 3px #eff7e1; }
+    .modal-hint { margin: 6px 0 13px; color: var(--muted); font-size: 9px; }
+    .feedback { display: none; margin-top: 12px; padding: 12px; border: 1px solid #e4edda; border-radius: 9px; color: #45543a; background: #f5f9ed; font-size: 10px; line-height: 1.55; }
+    .feedback.show { display: block; }
+    .resume-fields { display: grid; gap: 10px; margin: 17px 0; }
+    .resume-fields label { display: grid; gap: 5px; color: #596158; font-size: 9px; font-weight: 650; }
+    .resume-fields input, .resume-fields textarea { width: 100%; padding: 9px; border: 1px solid var(--line); border-radius: 8px; outline: none; font-size: 10px; font-weight: 400; }
+    .resume-fields textarea { min-height: 75px; resize: vertical; }
+    .resume-preview { display: none; margin-top: 15px; padding: 15px; border: 1px dashed #ccd5c3; border-radius: 9px; background: #fbfcf8; font-size: 10px; line-height: 1.6; overflow-wrap: anywhere; }
+    .resume-preview.show { display: block; }
+    .account-menu { position: relative; }
+    .account-trigger { padding: 0; display: flex; gap: 8px; align-items: center; border: 0; color: var(--ink); background: transparent; font-size: 11px; font-weight: 650; }
+    .account-popover { position: absolute; top: calc(100% + 10px); right: 0; z-index: 12; width: 230px; padding: 12px; display: none; border: 1px solid var(--line); border-radius: 11px; background: white; box-shadow: var(--shadow); }
+    .account-popover.open { display: grid; gap: 9px; }
+    .account-popover strong { font-size: 10px; overflow-wrap: anywhere; }
+    .account-popover small { color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .account-popover button { padding: 8px; border: 1px solid var(--line); border-radius: 7px; color: #475045; background: white; font-size: 9px; text-align: left; }
+    .account-popover button:hover { border-color: #d6e5c4; background: #f9fbf5; }
+    .account-popover button.logout-action { color: #8c5047; }
+    .account-divider { height: 1px; background: var(--line); }
+    .skill-assessment { margin: 0 17px 14px; padding: 11px; border: 1px solid #edf0e8; border-radius: 9px; background: #fbfcf9; color: #747c72; font-size: 9px; line-height: 1.5; }
+    .resume-workspace { display: grid; gap: 16px; margin-top: 16px; }
+    .resume-section { padding-top: 13px; border-top: 1px solid var(--line); }
+    .resume-section h3 { margin: 0 0 10px; font-size: 11px; }
+    .resume-fields { margin: 13px 0; }
+    .resume-fields input[type="file"] { font-size: 9px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .achievement-form { display: grid; gap: 8px; }
+    .achievement-form input, .achievement-form textarea { width: 100%; padding: 9px; border: 1px solid var(--line); border-radius: 8px; outline: none; font-size: 10px; }
+    .achievement-form textarea { min-height: 55px; resize: vertical; }
+    .entry-list { display: grid; gap: 7px; margin-top: 10px; }
+    .entry-row { padding: 9px; display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; border: 1px solid #eef0ea; border-radius: 8px; }
+    .entry-row strong { display: block; font-size: 9px; }
+    .entry-row small { display: block; margin-top: 3px; color: var(--muted); font-size: 8px; line-height: 1.45; overflow-wrap: anywhere; }
+    .entry-row button { flex: 0 0 auto; padding: 4px 6px; border: 0; border-radius: 6px; color: #8c5047; background: #fbefec; font-size: 8px; }
+    .storage-note { margin: 0; color: var(--muted); font-size: 8px; line-height: 1.5; }
+    .skill-chart-wrap { margin: 2px 17px 14px; padding: 12px; display: grid; grid-template-columns: minmax(145px, .85fr) minmax(130px, 1fr); gap: 13px; align-items: center; border: 1px solid #eef0ea; border-radius: 10px; background: #fcfdf9; }
+    .skill-chart { width: 100%; max-width: 190px; margin: auto; overflow: visible; }
+    .skill-chart polygon { transition: points .3s; }
+    .chart-legend { display: grid; gap: 8px; }
+    .chart-legend div { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #596158; font-size: 8px; }
+    .chart-legend strong { color: #303a32; font-size: 9px; }
+    .recommendation-body, .readiness-body { padding: 0 17px 15px; }
+    .recommendation-item { padding: 9px 0; display: grid; grid-template-columns: 25px 1fr; gap: 9px; align-items: start; border-top: 1px solid #eef0ea; }
+    .recommendation-item:first-child { border-top: 0; }
+    .recommendation-number { width: 23px; height: 23px; display: grid; place-items: center; border-radius: 7px; color: #48672e; background: #eff6df; font-size: 9px; font-weight: 750; }
+    .recommendation-item strong { display: block; font-size: 9px; }
+    .recommendation-item small { display: block; margin-top: 3px; color: var(--muted); font-size: 8px; line-height: 1.45; }
+    .assessment-summary-row { margin-bottom: 8px; display: flex; justify-content: space-between; gap: 8px; align-items: center; color: #687064; font-size: 8px; }
+    .assessment-score { color: #45672d; font-size: 9px; font-weight: 750; }
+    .readiness-scoreline { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 11px; }
+    .readiness-score { color: #28342d; font-size: 26px; font-weight: 750; letter-spacing: -1px; }
+    .readiness-score small { display: block; margin-top: 2px; color: var(--muted); font-size: 8px; font-weight: 500; letter-spacing: 0; }
+    .readiness-rating { padding: 6px 8px; border-radius: 20px; color: #596b38; background: #f0f6df; font-size: 8px; font-weight: 750; }
+    .readiness-metric { margin: 9px 0; }
+    .readiness-metric-top { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 5px; color: #61695f; font-size: 8px; }
+    .readiness-track { height: 5px; overflow: hidden; border-radius: 5px; background: #eff1eb; }
+    .readiness-track span { display: block; height: 100%; border-radius: inherit; background: #a3d454; }
+    .badge-collection { padding: 0 17px 14px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+    .badge-total { grid-column: 1/-1; margin: 0 0 1px; color: #737b70; font-size: 8px; }
+    .earned-badge { padding: 8px; display: flex; align-items: center; gap: 7px; border: 1px solid #edf0e8; border-radius: 8px; color: #999f97; background: #fafbf8; font-size: 8px; }
+    .earned-badge.unlocked { border-color: #e1ebd5; color: #405d2a; background: #f4f8ed; }
+    .earned-badge span:first-child { font-size: 13px; }
+    .assessment-question { margin: 12px 0; padding: 11px; border: 1px solid #edf0e8; border-radius: 9px; }
+    .assessment-question strong { display: block; margin-bottom: 8px; font-size: 10px; }
+    .assessment-question select { width: 100%; padding: 9px; border: 1px solid var(--line); border-radius: 8px; background: white; font-size: 10px; }
+    .resume-download-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+    .resume-download-note { margin: -3px 0 0; color: var(--muted); font-size: 8px; line-height: 1.45; }
+    .learning-modal { width: min(1000px, 100%); }
+    #interview-modal .modal { width: min(850px, 100%); }
+    .interview-setup, .interview-panel, .interview-report { display: grid; gap: 12px; margin-top: 16px; }
+    .interview-setup-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+    .interview-setup label, .interview-preferences label { display: grid; gap: 5px; color: #626c62; font-size: 9px; font-weight: 650; }
+    .interview-setup select, .interview-setup input, .interview-preferences input, .interview-preferences select { width: 100%; min-width: 0; padding: 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: #fff; font-size: 10px; }
+    .interview-preferences { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; margin-top: 12px; }
+    .interview-warning, .interview-feedback, .interview-report-card { padding: 11px; border: 1px solid #e8ede1; border-radius: 9px; background: #fbfcf9; color: #5f695d; font-size: 9px; line-height: 1.55; }
+    .interview-progress-row, .interview-question-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; color: #687064; font-size: 9px; }
+    .interview-progress-track { height: 6px; overflow: hidden; border-radius: 8px; background: #eef1e9; }
+    .interview-progress-track span { display: block; height: 100%; border-radius: inherit; background: #a3d454; transition: width .2s; }
+    .interview-timer { color: #405d2a; font-size: 15px; font-weight: 750; font-variant-numeric: tabular-nums; }
+    .interview-question { margin: 5px 0; font-size: 18px; line-height: 1.4; letter-spacing: -.3px; }
+    .interview-answer { width: 100%; min-height: 150px; resize: vertical; padding: 12px; border: 1px solid var(--line); border-radius: 9px; outline: none; font: inherit; font-size: 11px; line-height: 1.6; }
+    .interview-answer:focus { border-color: #acd962; box-shadow: 0 0 0 3px #eff7e1; }
+    .interview-feedback h4, .interview-report-card h3 { margin: 0 0 6px; color: #303a32; font-size: 11px; }
+    .interview-feedback p, .interview-report-card p { margin: 5px 0; }
+    .interview-feedback ul, .interview-report-card ul { margin: 4px 0; padding-left: 17px; }
+    .interview-scoreline { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+    .interview-scoreline strong { color: #38551e; font-size: 23px; }
+    .interview-history { display: grid; gap: 6px; margin-top: 10px; }
+    .interview-history button { display: flex; justify-content: space-between; gap: 8px; padding: 9px; border: 1px solid var(--line); border-radius: 8px; color: #465047; background: white; text-align: left; font-size: 9px; }
+    .interview-history button:hover { border-color: #b7d48e; background: #f7faef; }
+    .interview-report-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+    .analytics-grid { padding: 0 17px 15px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    .analytics-panel { min-width: 0; padding: 11px; border: 1px solid #eef0ea; border-radius: 9px; background: #fcfdf9; }
+    .analytics-panel h4 { margin: 0 0 9px; font-size: 10px; }
+    .analytics-bars { min-height: 95px; display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 5px; align-items: end; }
+    .analytics-day { min-width: 0; display: grid; justify-items: center; gap: 4px; color: #727b70; font-size: 7px; }
+    .analytics-day-track { width: 100%; height: 64px; display: flex; align-items: end; overflow: hidden; border-radius: 5px; background: #f0f2ec; }
+    .analytics-day-track span { width: 100%; min-height: 0; border-radius: 5px; background: #a3d454; }
+    .analytics-list { display: grid; gap: 7px; }
+    .analytics-line { display: flex; justify-content: space-between; gap: 8px; color: #60695f; font-size: 8px; }
+    .analytics-line strong { color: #303a32; }
+    .analytics-empty { color: var(--muted); font-size: 8px; line-height: 1.5; }
+    button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid #a7cb78; outline-offset: 2px; }
+    .learning-tabs { margin: 15px 0; padding: 4px; display: flex; flex-wrap: wrap; gap: 4px; border-radius: 10px; background: #f1f3ed; }
+    .learning-tab { padding: 8px 11px; border: 0; border-radius: 7px; color: #687064; background: transparent; font-size: 9px; font-weight: 700; }
+    .learning-tab.active { color: #334822; background: white; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+    .learning-toolbar { margin: 10px 0; display: grid; grid-template-columns: minmax(180px,1fr) repeat(2,minmax(130px,.45fr)); gap: 8px; }
+    .learning-toolbar input, .learning-toolbar select { min-width: 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: white; color: var(--ink); font-size: 10px; }
+    .retry-toggle { display: flex; align-items: center; gap: 6px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; color: #596158; background: white; font-size: 9px; }
+    .retry-toggle input { width: 13px; min-width: 13px; margin: 0; padding: 0; border: 0; box-shadow: none; accent-color: #85b64b; }
+    .learning-layout { min-height: 330px; display: grid; grid-template-columns: minmax(220px,.8fr) minmax(0,1.35fr); gap: 12px; }
+    .learning-topic-list { max-height: 56vh; overflow: auto; display: grid; align-content: start; gap: 6px; }
+    .learning-topic-button { padding: 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: white; text-align: left; }
+    .learning-topic-button.active { border-color: #b7d48e; background: #f7faef; }
+    .learning-topic-button strong { display: block; font-size: 9px; }
+    .learning-topic-button small { display: block; margin-top: 4px; color: var(--muted); font-size: 8px; }
+    .learning-content { min-width: 0; max-height: 56vh; overflow: auto; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+    .learning-content h3 { margin: 0 0 7px; font-size: 15px; }
+    .learning-content h4 { margin: 14px 0 6px; font-size: 10px; }
+    .learning-content p, .learning-content li { color: #687064; font-size: 9px; line-height: 1.6; }
+    .learning-content ul { padding-left: 17px; }
+    .learning-resource-links { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+    .learning-resource-links a { padding: 7px 9px; border: 1px solid #e4eadb; border-radius: 7px; color: #4d6d34; background: #f8faf4; font-size: 8px; font-weight: 650; text-decoration: none; }
+    .learning-resource-links a:hover { background: #eef5e4; }
+    .question-options { display: grid; gap: 6px; margin: 10px 0; }
+    .question-option { padding: 8px 9px; border: 1px solid var(--line); border-radius: 8px; color: #465047; background: white; font-size: 9px; text-align: left; }
+    .question-option.selected { border-color: #a7cb78; background: #f3f8e9; }
+    .question-option.correct { border-color: #80b550; background: #eff8e5; }
+    .question-option.incorrect { border-color: #dfa59a; background: #fcf0ed; }
+    .learning-feedback { margin: 9px 0; padding: 10px; border-radius: 8px; color: #4d5f40; background: #f3f7ed; font-size: 9px; line-height: 1.55; }
+    .mock-settings { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin: 10px 0; }
+    .mock-settings label { display: grid; gap: 5px; color: #646c63; font-size: 8px; }
+    .mock-settings select, .mock-settings input { min-width: 0; padding: 8px; border: 1px solid var(--line); border-radius: 7px; background: white; font-size: 9px; }
+    .mock-nav { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0; }
+    .mock-nav button { width: 29px; height: 29px; border: 1px solid var(--line); border-radius: 7px; color: #5e675c; background: white; font-size: 8px; }
+    .mock-nav button.current { border-color: #90b75e; background: #edf5df; }
+    .mock-nav button.review { box-shadow: inset 0 -3px #edb55d; }
+    .mock-topline { display: flex; justify-content: space-between; gap: 8px; color: #6b7468; font-size: 9px; }
+    .mock-timer { color: #435f2d; font-weight: 750; font-variant-numeric: tabular-nums; }
+    .mock-mark { margin: 8px 0; display: flex; gap: 6px; align-items: center; color: #656e64; font-size: 9px; }
+    .company-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+    .company-card { padding: 11px; border: 1px solid var(--line); border-radius: 9px; }
+    .company-card h4 { margin: 0 0 5px; font-size: 11px; }
+    .company-card p { margin: 4px 0; }
+    .topic-progress-tag { padding: 4px 6px; border-radius: 12px; color: #64705b; background: #f1f3ee; font-size: 7px; }
+    .topic-progress-tag.done { color: #44652e; background: #edf6df; }
+    @media (max-width: 620px) { .learning-layout { grid-template-columns: 1fr; } .learning-topic-list { max-height: 180px; grid-template-columns: repeat(2,minmax(0,1fr)); } .learning-content { max-height: 43vh; } .learning-toolbar { grid-template-columns: 1fr 1fr; } .learning-toolbar input { grid-column: 1/-1; } .mock-settings { grid-template-columns: 1fr 1fr; } .company-grid { grid-template-columns: 1fr; } .learning-modal { padding: 16px; } }
+    @media (max-width: 620px) { .interview-setup-grid, .interview-report-grid, .analytics-grid { grid-template-columns: 1fr; } .interview-preferences { grid-template-columns: 1fr; } #interview-modal .modal { padding: 16px; } .interview-question { font-size: 15px; } .learning-toolbar { grid-template-columns: 1fr 1fr; } .retry-toggle { grid-column: 1/-1; } }
+    .auth-backdrop { position: fixed; inset: 0; z-index: 30; padding: 18px; display: none; place-items: center; background: rgba(22,30,27,.7); }
+    .auth-backdrop.open { display: grid; }
+    .auth-card { width: min(470px, 100%); max-height: 94vh; overflow: auto; padding: 24px; border-radius: 18px; background: white; box-shadow: 0 25px 90px rgba(0,0,0,.22); }
+    .auth-brand { display: flex; align-items: center; gap: 9px; margin-bottom: 20px; font-size: 16px; font-weight: 750; }
+    .auth-card h1 { margin: 0 0 7px; font-size: 23px; }
+    .auth-card > p { margin: 0 0 17px; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .auth-form { display: grid; gap: 11px; }
+    .auth-form label { display: grid; gap: 5px; color: #596158; font-size: 9px; font-weight: 650; }
+    .auth-form input, .auth-form select { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: white; font-size: 11px; }
+    .auth-form input:focus, .auth-form select:focus { border-color: #acd962; box-shadow: 0 0 0 3px #eff7e1; }
+    .auth-form .primary-button { justify-self: start; margin-top: 3px; }
+    .auth-switch { margin-top: 13px; padding: 0; border: 0; color: #668446; background: none; font-size: 9px; font-weight: 700; }
+    .auth-error { min-height: 14px; color: #a4493c; font-size: 9px; }
+    .auth-note { margin-top: 14px !important; padding: 9px; border-radius: 8px; background: #f5f6f1; font-size: 8px !important; }
+    body.auth-required { overflow: hidden; }
+    body.auth-required .app { filter: blur(3px); pointer-events: none; user-select: none; }
+    @media (min-width: 1400px) { main { padding-left: 55px; padding-right: 55px; } }
+    @media (max-width: 1100px) { main { padding-left: 25px; padding-right: 25px; } .dashboard-grid { grid-template-columns: minmax(0, 1.35fr) minmax(230px, .8fr); } }
+    @media (max-width: 850px) { .app { grid-template-columns: 66px minmax(0,1fr); } .sidebar { padding: 21px 9px 14px; align-items: center; } .brand { padding: 2px 0 27px; } .brand-name, .workspace, .nav-label, .nav button .nav-text, .streak, .settings, .side-bottom .nav { display: none; } .nav { width: 100%; } .nav button { justify-content: center; padding: 11px 3px; } .nav-icon { width: auto; font-size: 17px; } .dashboard-grid { grid-template-columns: minmax(0,1fr); } .right-column { grid-template-columns: repeat(2, minmax(0,1fr)); } .interview-card { grid-row: span 2; } main { padding-left: 21px; padding-right: 21px; } }
+    @media (max-width: 560px) { .app { display: block; } .sidebar { position: fixed; z-index: 5; top: auto; right: 0; bottom: 0; left: 0; width: 100%; height: 58px; min-height: 0; padding: 5px 9px; flex-direction: row; justify-content: center; border-top: 1px solid #485153; } .brand, .side-bottom { display: none; } .nav { display: flex; justify-content: space-around; max-width: 440px; } .nav button { width: 44px; height: 44px; } .nav button .nav-text { display: none; } main { padding: 0 15px 78px; } .topbar { height: 58px; } .top-profile span { display: none; } .top-actions { gap: 9px; } .welcome { align-items: flex-start; padding: 24px 0 17px; } .welcome h1 { font-size: 26px; } .welcome p { max-width: 260px; line-height: 1.5; } .week-pill { padding: 8px; font-size: 8px; } .hero { grid-template-columns: minmax(0,1fr) 91px; min-height: 187px; padding: 18px 16px; gap: 4px; } .hero h2 { font-size: 19px; } .hero p { font-size: 10px; } .hero .readiness { transform: scale(.78); transform-origin: center; } .stats { grid-template-columns: repeat(2,1fr); gap: 8px; margin: 11px 0 17px; } .stat { padding: 11px; } .right-column { grid-template-columns: 1fr; } .interview-card { grid-row: auto; } .stages { margin-top: 14px; } .stage strong { font-size: 7px; } .stage small { font-size: 7px; } .skill-row { grid-template-columns: 91px 1fr 27px; } .bottom-note { line-height: 1.5; } .form-row { grid-template-columns: 1fr; } .auth-card { padding: 19px; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Main navigation">
+      <div class="brand"><span class="brand-mark">↗</span><span class="brand-name">launchpad</span></div>
+      <div class="workspace">
+        <div class="avatar" id="sidebar-avatar">ST</div>
+        <div><small>YOUR LEARNING SPACE</small><strong id="sidebar-student-name">My roadmap</strong></div>
+      </div>
+      <div class="nav-label">Workspace</div>
+      <nav class="nav">
+        <button class="active" data-section="Overview"><span class="nav-icon">⌂</span><span class="nav-text">Overview</span></button>
+        <button data-section="Learning path"><span class="nav-icon">◫</span><span class="nav-text">Learning path</span></button>
+        <button data-section="Learn & Practice"><span class="nav-icon">▣</span><span class="nav-text">Learn &amp; Practice</span></button>
+        <button data-section="Practice"><span class="nav-icon">⌘</span><span class="nav-text">Practice</span></button>
+        <button data-section="Interviews"><span class="nav-icon">◉</span><span class="nav-text">Interview practice</span></button>
+        <button data-section="Resume"><span class="nav-icon">▤</span><span class="nav-text">Resume builder</span></button>
+        <button data-section="Achievements"><span class="nav-icon">✧</span><span class="nav-text">Achievements</span></button>
+      </nav>
+      <div class="side-bottom">
+        <div class="streak">
+          <div class="streak-top"><span>Your consistency</span><span>🔥</span></div>
+          <p><strong id="streak-count">3-day streak</strong><br>Little by little, you're getting closer.</p>
+        </div>
+        <div class="nav-label">Personal</div>
+        <nav class="nav"><button class="settings" data-section="Settings"><span class="nav-icon">⚙</span><span class="nav-text">Settings</span></button></nav>
+      </div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div class="breadcrumb">Workspace <span aria-hidden="true"> / </span> <strong id="breadcrumb-current">Overview</strong></div>
+        <div class="top-actions">
+          <button class="icon-button" aria-label="Notifications" id="notification-button">♧<span class="notification-dot"></span></button>
+          <div class="account-menu">
+            <button class="account-trigger" id="account-trigger" aria-expanded="false"><div class="avatar" id="profile-avatar">ST</div><span id="profile-name">Student</span></button>
+            <div class="account-popover" id="account-popover">
+              <strong id="account-email"></strong>
+              <small>This demo profile is stored only in this browser.</small>
+              <button id="login-account">Log in / switch account</button>
+              <button id="create-account">Create another account</button>
+              <div class="account-divider"></div>
+              <button id="logout-account" class="logout-action">Log out</button>
+            </div>
+          </div>
+          <button class="icon-button mobile-menu" aria-label="More options">···</button>
+        </div>
+      </header>
+      <section class="welcome">
+        <div><div class="eyebrow" id="today-date"></div><h1>Your placement season, mapped.</h1><p id="welcome-message">One clear next step at a time.</p></div>
+        <div class="week-pill"><span>✳</span> Semester-aware plan</div>
+      </section>
+      <section class="hero" aria-label="Placement readiness">
+        <div class="hero-copy">
+          <div class="hero-kicker"><span>✦</span> YOUR PERSONAL PLACEMENT PLAN</div>
+          <h2 id="hero-title">Make your next 90 days count.</h2>
+          <p id="hero-description">A personal plan for your target role, current skills, and semester workload. No scattered tabs. Just the next step that fits you.</p>
+          <div class="hero-actions">
+            <button class="primary-button" id="start-learning">Continue today's plan&nbsp; →</button>
+            <button class="ghost-button" id="build-resume">Build my resume&nbsp; ↗</button>
+          </div>
+        </div>
+        <div class="readiness">
+          <div class="ring" id="readiness-ring"><div class="ring-inner"><strong id="readiness-number">0%</strong><span>placement ready</span></div></div>
+          <span id="ready-caption">Your starting point</span>
+        </div>
+      </section>
+      <section class="stats" aria-label="Progress summary">
+        <article class="stat"><div class="stat-top"><span>Roadmap checkpoints</span><span class="stat-icon" style="background:#eff6df">✳</span></div><strong id="skills-completed">0 / 24</strong><small class="positive">Your roadmap is ready</small></article>
+        <article class="stat"><div class="stat-top"><span>Estimated study time</span><span class="stat-icon" style="background:#fcebe5">◷</span></div><strong id="study-time">0h 0m</strong><small>Added from completed learning tasks</small></article>
+        <article class="stat"><div class="stat-top"><span>Days to placement season</span><span class="stat-icon" style="background:#eeeaff">⌁</span></div><strong>90 days</strong><small>Adjust your target anytime</small></article>
+        <article class="stat"><div class="stat-top"><span>Current CGPA</span><span class="stat-icon" style="background:#fff4da">◎</span></div><strong id="cgpa-display">—</strong><small>Tracked alongside your skills</small></article>
+      </section>
+      <section class="dashboard-grid">
+        <div class="left-column">
+          <article class="card" id="learning-card">
+            <div class="card-head">
+              <div><h3>Your path to placement</h3><p>A staged roadmap, balanced for your semester and target role.</p></div>
+              <span class="stage-label" id="current-stage-label">STAGE 1 OF 4</span>
+            </div>
+            <div class="roadmap">
+              <div class="roadmap-progress"><span>Overall roadmap</span><strong id="progress-label">0% complete</strong></div>
+              <div class="progress-track"><div class="progress-fill" id="roadmap-fill"></div></div>
+              <div class="stages">
+                <div class="stage current"><div class="stage-dot">1</div><strong id="stage-one">Build foundations</strong><small>Weeks 1–3</small></div>
+                <div class="stage"><div class="stage-dot">2</div><strong>Build &amp; solve</strong><small>Weeks 4–7</small></div>
+                <div class="stage"><div class="stage-dot">3</div><strong>Prove your skills</strong><small>Weeks 8–10</small></div>
+                <div class="stage"><div class="stage-dot">4</div><strong>Interview ready</strong><small>Weeks 11–13</small></div>
+              </div>
+              <div class="card-head" style="padding:4px 0 10px">
+              <div><h3>This week's focus</h3><p>Choose a focused 30–45 min block · lighten on class days</p></div>
+                <button class="text-link" id="show-week-plan">See weekly plan →</button>
+              </div>
+              <div class="skill-assessment" id="assessment-summary"></div>
+              <div class="tasks" id="tasks-list"></div>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h3>Your skill balance</h3><p>Placement-ready means more than just coding.</p></div><button class="text-link" data-nav="Learning path">Explore skills →</button></div>
+            <div class="skill-list">
+              <div class="skill-row" data-skill-row="dsa"><span class="skill-name"><i style="background:#eff6df">⌘</i> DSA</span><div class="skill-track"><span></span></div><span class="skill-percent">0%</span></div>
+              <div class="skill-row" data-skill-row="web"><span class="skill-name"><i style="background:#fcebe5">⌘</i> Web dev</span><div class="skill-track"><span></span></div><span class="skill-percent">0%</span></div>
+              <div class="skill-row" data-skill-row="aptitude"><span class="skill-name"><i style="background:#eeeaff">◷</i> Aptitude</span><div class="skill-track"><span></span></div><span class="skill-percent">0%</span></div>
+              <div class="skill-row" data-skill-row="academics"><span class="skill-name"><i style="background:#fff4da">◎</i> Academics</span><div class="skill-track"><span></span></div><span class="skill-percent">0%</span></div>
+              <div class="skill-row" data-skill-row="communication"><span class="skill-name"><i style="background:#e8f3f2">✦</i> Communication</span><div class="skill-track"><span></span></div><span class="skill-percent">0%</span></div>
+            </div>
+            <div class="skill-chart-wrap">
+              <svg class="skill-chart" id="skill-radar" viewBox="0 0 200 180" role="img" aria-label="Radar chart showing progress across placement skills">
+                <polygon points="100,18 176,73 147,163 53,163 24,73" fill="none" stroke="#e6eae0" stroke-width="1"></polygon>
+                <polygon points="100,39 157,80 136,148 64,148 43,80" fill="none" stroke="#e6eae0" stroke-width="1"></polygon>
+                <polygon points="100,60 138,87 124,132 76,132 62,87" fill="none" stroke="#e6eae0" stroke-width="1"></polygon>
+                <line x1="100" y1="92" x2="100" y2="18" stroke="#e6eae0"></line><line x1="100" y1="92" x2="176" y2="73" stroke="#e6eae0"></line><line x1="100" y1="92" x2="147" y2="163" stroke="#e6eae0"></line><line x1="100" y1="92" x2="53" y2="163" stroke="#e6eae0"></line><line x1="100" y1="92" x2="24" y2="73" stroke="#e6eae0"></line>
+                <polygon id="skill-radar-area" points="100,92 100,92 100,92 100,92 100,92" fill="rgba(163,212,84,.25)" stroke="#85b64b" stroke-width="2"></polygon>
+                <text x="100" y="10" text-anchor="middle" font-size="8" fill="#697267">DSA</text><text x="183" y="72" text-anchor="start" font-size="8" fill="#697267">Web</text><text x="151" y="176" text-anchor="middle" font-size="8" fill="#697267">Aptitude</text><text x="49" y="176" text-anchor="middle" font-size="8" fill="#697267">Academics</text><text x="17" y="72" text-anchor="end" font-size="8" fill="#697267">Evidence</text>
+              </svg>
+              <div class="chart-legend" id="skill-chart-legend" aria-live="polite"></div>
+            </div>
+            <div class="card-head" style="padding-top:0">
+              <div><h3>Quick skill check</h3><p>Use a short quiz to get more accurate, score-based recommendations.</p></div>
+              <button class="text-link" id="open-assessment">Check skills →</button>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h3>Recommended next steps</h3><p id="recommendation-caption">Prioritized from your starting levels and assessment results.</p></div><span class="stage-label">PERSONALIZED</span></div>
+            <div class="recommendation-body" id="recommendation-list"></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h3>Learning analytics</h3><p>Summaries use activity and assessment records saved in this browser.</p></div><span class="stage-label">YOUR DATA</span></div>
+            <div id="analytics-dashboard" class="analytics-grid"></div>
+          </article>
+        </div>
+        <div class="right-column">
+          <article class="card interview-card">
+            <div class="interview-inner">
+              <div class="interview-tag">✦ &nbsp; INTERVIEW PRACTICE · RULE-BASED</div>
+              <h3>Meet your interview practice coach.</h3>
+              <p>Practice role-specific questions, get transparent feedback, and build confidence before the real thing.</p>
+              <div class="interview-meta"><span>◷ &nbsp; Flexible duration</span><span>↗ &nbsp; 5–15 questions</span></div>
+              <button class="primary-button" id="start-interview">Start a mock interview&nbsp; →</button>
+            </div>
+          </article>
+          <article class="card cgpa-card">
+            <div class="card-head"><div><h3>Keep academics in view</h3><p>Your CGPA is part of your placement picture.</p></div></div>
+            <div class="cgpa-body">
+              <div class="cgpa-input-row"><input id="cgpa-input" type="number" min="0" max="10" step="0.01" placeholder="e.g. 8.2" aria-label="Current CGPA"><span>/ 10</span><button class="save-cgpa" id="save-cgpa">Save</button></div>
+              <p class="cgpa-note">Add your CGPA to keep track of academics next to your placement skills. This stays on your device.</p>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h3>Placement readiness</h3><p>An estimate to help guide your preparation—not an employer decision.</p></div></div>
+            <div class="readiness-body">
+              <div class="readiness-scoreline"><div class="readiness-score"><span id="readiness-analysis-score">—</span><small id="readiness-analysis-note">Complete your profile for an estimate</small></div><span class="readiness-rating" id="readiness-rating">IN PROGRESS</span></div>
+              <div id="readiness-breakdown"></div>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h3>Achievements &amp; resume</h3><p id="achievement-summary">Add certificates, awards, and project wins as you go.</p></div><button class="text-link" data-nav="Achievements">Manage →</button></div>
+            <div class="achievement">
+              <div class="badge-row"><div class="badge-icon">🌱</div><div class="badge-copy"><strong>First steps</strong><small>Complete your first learning task</small></div><span class="badge-count" id="badge-count">0 / 1</span></div>
+            </div>
+            <div class="badge-collection" id="badge-collection"></div>
+          </article>
+        </div>
+      </section>
+      <p class="bottom-note">Your plan adapts to your goals. This demo saves progress and profile data in this browser only.</p>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal-backdrop" id="interview-modal" role="dialog" aria-modal="true" aria-labelledby="interview-title">
+    <div class="modal" id="interview-workspace">
+      <div class="modal-head"><div><h2 id="interview-title">Interview practice</h2><p id="interview-subtitle">Set up a practice session. Scoring is transparent and rule-based; no AI provider is connected.</p></div><button class="close-modal" data-close aria-label="Close">✕</button></div>
+      <div id="interview-content"></div>
+    </div>
+  </div>
+  <div class="modal-backdrop" id="resume-modal" role="dialog" aria-modal="true" aria-labelledby="resume-title">
+    <div class="modal">
+      <div class="modal-head"><div><h2 id="resume-title">Your resume workspace</h2><p>Add projects, achievements, and supporting documents as you go.</p></div><button class="close-modal" data-close aria-label="Close">✕</button></div>
+      <div class="resume-workspace">
+        <section class="resume-section">
+          <h3>Resume details</h3>
+          <div class="resume-fields">
+            <label>Your name<input id="resume-name" autocomplete="name" maxlength="100"></label>
+            <label>Target role<input id="resume-role" maxlength="100" placeholder="e.g. Software Engineer Intern"></label>
+            <label>Career objective<textarea id="resume-objective" maxlength="1500" placeholder="A brief objective written in your own words."></textarea></label>
+            <label>Education<input id="resume-education" maxlength="500" placeholder="Degree, college, expected graduation"></label>
+            <label>Technical skills<input id="resume-skills" maxlength="1000" placeholder="Skills you can confidently discuss, comma-separated"></label>
+            <label>Projects<textarea id="resume-project" maxlength="3000" placeholder="What have you built? Mention your contribution, tools, and results."></textarea></label>
+          </div>
+          <button class="primary-button" id="generate-resume">Preview resume&nbsp; →</button>
+          <div class="resume-download-actions">
+            <button class="save-cgpa" id="download-resume">Download .txt</button>
+            <button class="save-cgpa" id="download-formatted-resume">Download formatted resume</button>
+          </div>
+          <p class="resume-download-note">The formatted resume downloads as HTML. Open it in a browser to print or save as PDF.</p>
+          <div class="resume-preview" id="resume-preview"></div>
+        </section>
+        <section class="resume-section">
+          <h3>Add an achievement</h3>
+          <div class="achievement-form">
+            <input id="achievement-title" maxlength="150" placeholder="Achievement or certification" aria-label="Achievement or certification">
+            <div class="form-row"><input id="achievement-issuer" maxlength="150" placeholder="Awarded by" aria-label="Awarded by"><input id="achievement-date" type="month" aria-label="Achievement date"></div>
+            <textarea id="achievement-detail" maxlength="1000" placeholder="What did you accomplish? (optional)" aria-label="Achievement details"></textarea>
+            <button class="save-cgpa" id="add-achievement">Add achievement +</button>
+          </div>
+          <div class="entry-list" id="achievement-list"></div>
+        </section>
+        <section class="resume-section">
+          <h3>Supporting documents</h3>
+          <div class="resume-fields">
+            <label>Add certificates, transcripts, or project documents<input id="document-input" type="file" multiple accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"></label>
+          </div>
+          <button class="save-cgpa" id="add-documents">Add selected documents +</button>
+          <div class="entry-list" id="document-list"></div>
+          <p class="storage-note">Files are kept in this browser on this device only (5 MB max per file). Don’t upload sensitive documents to a shared device.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div class="auth-backdrop" id="auth-backdrop" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <section class="auth-card">
+      <div class="auth-brand"><span class="brand-mark">↗</span> launchpad</div>
+      <h1 id="auth-title">Your journey starts here.</h1>
+      <p id="auth-description">Create a student profile and tell us where you’re starting. Your learning plan will meet you there.</p>
+      <form class="auth-form" id="auth-form">
+        <div id="create-fields">
+          <label>Your name<input id="auth-name" autocomplete="name" placeholder="How should we address you?"></label>
+          <label style="margin-top:10px">Branch<input id="auth-branch" maxlength="100" placeholder="e.g. Computer Science"></label>
+          <label style="margin-top:10px">Target role<input id="auth-role" placeholder="e.g. Software Engineer"></label>
+          <div class="form-row" style="margin-top:10px">
+            <label>DSA starting point<select id="assess-dsa"><option value="0">New to it — start with basics</option><option value="2">Know the fundamentals</option><option value="4">Can solve problems independently</option></select></label>
+            <label>Web development<select id="assess-web"><option value="0">New to it — start with basics</option><option value="2">Know the fundamentals</option><option value="4">Can build projects independently</option></select></label>
+          </div>
+          <label style="margin-top:10px">Aptitude starting point<select id="assess-aptitude"><option value="0">New to it — start with basics</option><option value="2">Know the fundamentals</option><option value="4">Comfortable with timed practice</option></select></label>
+        </div>
+        <label id="saved-account-field" hidden>Saved account in this browser
+          <select id="saved-account"><option value="">Choose a saved email (optional)</option></select>
+        </label>
+        <label>Email<input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+        <div class="auth-error" id="auth-error" role="status"></div>
+        <button class="primary-button" id="auth-submit" type="submit">Create my learning profile&nbsp; →</button>
+      </form>
+      <button class="auth-switch" id="auth-switch">Already have a profile? Sign in</button>
+      <p class="auth-note">Demo profile selection only: there are no passwords or verified accounts. When served by Flask, profile and resume details sync to this browser session's SQLite-backed profile. Do not enter sensitive information or treat this as secure authentication.</p>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="assessment-modal" role="dialog" aria-modal="true" aria-labelledby="assessment-title">
+    <section class="modal">
+      <div class="modal-head"><div><h2 id="assessment-title">Update your starting points</h2><p>Choose the level that best describes you today. This updates where each learning path begins.</p></div><button class="close-modal" data-close aria-label="Close">✕</button></div>
+      <div class="auth-form" style="margin-top:16px">
+        <label>Target role<input id="edit-target-role" placeholder="e.g. Software Developer"></label>
+        <label>Branch<input id="edit-branch" maxlength="100" placeholder="e.g. Computer Science"></label>
+        <label>Current semester<input id="edit-semester" type="number" min="1" max="12" placeholder="e.g. 5"></label>
+        <label>Daily study time target (minutes)<input id="edit-daily-minutes" type="number" min="15" max="300" step="5"></label>
+        <label>DSA<select id="edit-assess-dsa"><option value="0">New to it — start with basics</option><option value="2">Know the fundamentals</option><option value="4">Can solve problems independently</option></select></label>
+        <label>Web development<select id="edit-assess-web"><option value="0">New to it — start with basics</option><option value="2">Know the fundamentals</option><option value="4">Can build projects independently</option></select></label>
+        <label>Aptitude<select id="edit-assess-aptitude"><option value="0">New to it — start with basics</option><option value="2">Know the fundamentals</option><option value="4">Comfortable with timed practice</option></select></label>
+        <button class="primary-button" id="save-assessment">Update my plan&nbsp; →</button>
+      </div>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="skill-check-modal" role="dialog" aria-modal="true" aria-labelledby="skill-check-title">
+    <section class="modal">
+      <div class="modal-head"><div><h2 id="skill-check-title">Quick skill check</h2><p>Six short questions. When the app is served through Flask, answers are checked and scored on the server.</p></div><button class="close-modal" data-close aria-label="Close">✕</button></div>
+      <div id="skill-check-questions"></div>
+      <button class="primary-button" id="submit-skill-check">Score my answers&nbsp; →</button>
+      <div class="feedback" id="skill-check-feedback"></div>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="learning-modal" role="dialog" aria-modal="true" aria-labelledby="learning-title">
+    <section class="modal learning-modal">
+      <div class="modal-head"><div><h2 id="learning-title">Learn &amp; practice</h2><p>Structured topics, worked explanations, free learning links, and tests. Pick a path to get started.</p></div><button class="close-modal" data-close aria-label="Close">✕</button></div>
+      <div class="stats" id="learning-stats" style="grid-template-columns:repeat(5,minmax(0,1fr));margin:12px 0">
+        <article class="stat"><div class="stat-top"><span>Questions attempted</span></div><strong id="learning-attempted">0</strong></article>
+        <article class="stat"><div class="stat-top"><span>Correct</span></div><strong id="learning-correct">0</strong></article>
+        <article class="stat"><div class="stat-top"><span>Accuracy</span></div><strong id="learning-accuracy">—</strong></article>
+        <article class="stat"><div class="stat-top"><span>Lessons passed</span></div><strong id="learning-topics-done">0</strong></article>
+        <article class="stat"><div class="stat-top"><span>Coding exercises</span></div><strong id="learning-coding-done">0</strong></article>
+      </div>
+      <nav class="learning-tabs" aria-label="Learning modules">
+        <button class="learning-tab active" data-learning-tab="dsa">DSA</button>
+        <button class="learning-tab" data-learning-tab="web">Web development</button>
+        <button class="learning-tab" data-learning-tab="aptitude">Aptitude &amp; reasoning</button>
+        <button class="learning-tab" data-learning-tab="mock">Mock tests</button>
+        <button class="learning-tab" data-learning-tab="companies">Companies</button>
+      </nav>
+      <div id="learning-toolbar" class="learning-toolbar"></div>
+      <div id="learning-panel"></div>
+      <p class="storage-note" id="learning-storage-note" style="margin-top:10px">Run Launchpad through Flask for SQLite profile persistence and server-scored assessments/interviews. Learning-hub and mock-test answer keys remain in browser files and are not secure examinations. Uploaded documents stay in this browser.</p>
+    </section>
+  </div>
+  <script src="learning-data.js"></script>
+  <script src="interview-engine.js"></script>
+  <script>
+    const accountsKey = "launchpad-student-profiles-v2";
+    const activeKey = "launchpad-active-student-v2";
+    const skillConfig = {
+      dsa: { name: "DSA", topics: [["Programming foundations", "Variables, loops, functions, and complexity", 35], ["Arrays & strings", "Traverse, search, and transform common sequences", 40], ["Hash maps & sets", "Use lookups to improve problem-solving time", 40], ["Two pointers", "Solve pair and range problems efficiently", 35], ["Stacks & queues", "Model ordered and first-in-first-out data", 40], ["Linked lists", "Build, traverse, and reverse linked structures", 40], ["Trees & recursion", "Practice traversal and recursive reasoning", 45], ["Graphs & interview patterns", "Apply BFS, DFS, and mixed patterns", 50]], check: [["Which structure is usually used to manage function calls?", ["Queue", "Stack", "Hash map", "Graph"]], ["What is the time complexity of binary search on a sorted array?", ["O(1)", "O(log n)", "O(n)", "O(n²)"]]] },
+      web: { name: "Web development", topics: [["HTML & the web", "Create accessible semantic page structure", 35], ["CSS foundations", "Style typography, spacing, and responsive layouts", 40], ["JavaScript basics", "Use variables, functions, events, and the DOM", 45], ["Responsive components", "Build reusable interfaces for every screen", 45], ["APIs & async JavaScript", "Fetch, load, and display remote data", 45], ["State & forms", "Validate inputs and build interactive flows", 45], ["Build a portfolio project", "Ship a complete project and write its README", 60], ["Deploy & polish", "Deploy, test, and present your work", 45]], check: [["Which HTML element best describes a group of main site navigation links?", ["<div>", "<nav>", "<span>", "<footer>"]], ["Which CSS layout is designed for a two-dimensional row-and-column grid?", ["Flexbox", "Grid", "Float", "Inline"]]] },
+      aptitude: { name: "Aptitude", topics: [["Number sense", "Build confidence with arithmetic and estimation", 25], ["Ratios & percentages", "Practice proportions, discounts, and change", 30], ["Averages & mixtures", "Solve common quantitative reasoning questions", 30], ["Time, speed & work", "Learn efficient approaches to rate problems", 35], ["Profit, loss & interest", "Work through business-math essentials", 30], ["Logical reasoning", "Practice patterns, arrangements, and deductions", 35], ["Data interpretation", "Read charts and reason from the numbers", 35], ["Timed mixed practice", "Complete a short mock set and review errors", 40]], check: [["A product priced at 800 is discounted by 25%. What is the sale price?", ["200", "575", "600", "625"]], ["If 3 workers finish a task in 12 days, how many days would 6 equally productive workers take?", ["3", "6", "9", "24"]]] }
+    };
+    const baseState = { name: "", branch: "Not specified", role: "", objective: "", education: "", skills: "", semester: "", dailyStudyMinutes: 60, weeklyGoalDays: 5, assessmentHistory: [], interviewHistory: [], interviewSession: null, activityLog: [], assessments: { dsa: 0, web: 0, aptitude: 0 }, skillScores: { dsa: null, web: null, aptitude: null }, tasks: [], cgpa: "", studyMinutes: 0, streak: 0, lastStudyDate: "", achievements: [], project: "", learningProgress: {}, bookmarks: [], learningStats: { attempted: 0, correct: 0, incorrect: 0, attempts: [] } };
+    let accounts = {};
+    let activeEmail = "";
+    let state = null;
+    let authMode = "create";
+    let toastTimer;
+    const backendEnabled = location.protocol === "http:" || location.protocol === "https:";
+    const backendLabelKey = "launchpad-backend-profile-label";
+    let backendCsrfToken = "";
+    let backendSyncTimer = null;
+    let backendRecommendationTimer = null;
+    let backendNoticeShown = false;
+    let backendProfileEmail = "";
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[character]);
+    }
+    async function backendRequest(path, options = {}) {
+      if (!backendEnabled) throw new Error("Start Launchpad with Flask to use server persistence.");
+      if (!backendCsrfToken && path !== "/api/health") {
+        const health = await fetch("/api/health", { credentials: "same-origin" });
+        const healthBody = await health.json();
+        if (!health.ok || !healthBody.csrf_token) throw new Error(healthBody.error || "Could not connect to Launchpad.");
+        backendCsrfToken = healthBody.csrf_token;
+      }
+      const headers = { ...(options.headers || {}) };
+      if (options.body) headers["Content-Type"] = "application/json";
+      if (options.method && options.method !== "GET") headers["X-CSRF-Token"] = backendCsrfToken;
+      const response = await fetch(path, { ...options, headers, credentials: "same-origin" });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || `Launchpad server returned ${response.status}.`);
+      if (path === "/api/health") backendCsrfToken = body.csrf_token;
+      return body;
+    }
+    async function syncBackendProfile() {
+      if (!backendEnabled || !state || !activeEmail) return;
+      if (backendProfileEmail !== activeEmail) {
+        await connectBackendProfile();
+        return;
+      }
+      await backendRequest("/api/profile", {
+        method: "POST",
+        body: JSON.stringify({
+          name: state.name, branch: state.branch || "Not specified",
+          semester: Number(state.semester) || 1,
+          cgpa: state.cgpa === "" || state.cgpa == null ? null : Number(state.cgpa),
+          target_role: state.role || "",
+          study_hours: Math.min(12, Math.max(.25, Number(state.dailyStudyMinutes || 60) / 60))
+        })
+      });
+      await backendRequest("/api/resume", {
+        method: "PUT",
+        body: JSON.stringify({
+          career_objective: state.objective || "",
+          education: state.education || "",
+          technical_skills: state.skills || "",
+          projects: state.project ? [state.project] : [],
+          certifications: [],
+          achievements: state.achievements.map(item => ({
+            title: item.title || "", issuer: item.issuer || "",
+            date: item.date || "", detail: item.detail || ""
+          }))
+        })
+      });
+    }
+    function scheduleBackendSync() {
+      if (!backendEnabled || !state) return;
+      clearTimeout(backendSyncTimer);
+      backendSyncTimer = setTimeout(() => {
+        syncBackendProfile().catch(error => {
+          console.error("Could not save the profile to the Launchpad server.", error);
+          if (!backendNoticeShown) {
+            showToast(`Server save failed: ${error.message}`);
+            backendNoticeShown = true;
+          }
+        });
+      }, 350);
+    }
+    async function connectBackendProfile() {
+      if (!backendEnabled || !state || !activeEmail) return;
+      try {
+        const savedLabel = localStorage.getItem(backendLabelKey);
+        if (savedLabel && savedLabel !== activeEmail) {
+          await backendRequest("/api/session/logout", { method: "POST" });
+          backendCsrfToken = "";
+        }
+        const { profile } = await backendRequest("/api/profile");
+        if (profile && savedLabel === activeEmail) {
+          state.name = profile.name;
+          state.role = profile.target_role;
+          state.semester = profile.semester;
+          state.cgpa = profile.cgpa == null ? "" : profile.cgpa;
+          state.dailyStudyMinutes = Math.round(profile.study_hours * 60);
+          if (profile.resume) {
+            state.objective = profile.resume.career_objective;
+            state.education = profile.resume.education;
+            state.skills = profile.resume.technical_skills;
+            state.project = (profile.resume.projects || []).join("\n");
+            if (Array.isArray(profile.resume.achievements)) state.achievements = profile.resume.achievements;
+          }
+          await hydrateBackendRecords();
+          accounts[activeEmail] = state;
+          persistAccounts();
+          updateProfileUI();
+          updateProgress();
+        } else {
+          if (profile && savedLabel !== activeEmail) {
+            await backendRequest("/api/session/logout", { method: "POST" });
+            backendCsrfToken = "";
+          }
+          localStorage.setItem(backendLabelKey, activeEmail);
+          backendProfileEmail = activeEmail;
+          await syncBackendProfile();
+          const taskIds = new Set(Object.entries(skillConfig).flatMap(([skill, config]) =>
+            config.topics.map((_, index) => taskId(skill, index))
+          ));
+          for (const id of state.tasks.filter(item => taskIds.has(item))) {
+            await backendRequest(`/api/tasks/${encodeURIComponent(id)}/complete`, { method: "POST", body: "{}" });
+          }
+          await hydrateBackendRecords();
+        }
+        backendProfileEmail = activeEmail;
+        backendNoticeShown = false;
+        scheduleServerRecommendations();
+      } catch (error) {
+        console.error("Could not connect the browser profile to the Launchpad server.", error);
+        if (!backendNoticeShown) {
+          showToast(`Server connection failed: ${error.message}`);
+          backendNoticeShown = true;
+        }
+      }
+    }
+    function persistAccounts() {
+      try { localStorage.setItem(accountsKey, JSON.stringify(accounts)); return true; }
+      catch (error) { console.error("Could not save student profiles.", error); showToast("Profile data could not be saved in this browser."); return false; }
+    }
+    function persistActiveProfile() {
+      if (!state || !activeEmail) return;
+      accounts[activeEmail] = state;
+      persistAccounts();
+      scheduleBackendSync();
+    }
+    function initials(name) {
+      return name.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "ST";
+    }
+    function updateProfileUI() {
+      document.getElementById("profile-name").textContent = state.name;
+      document.getElementById("profile-avatar").textContent = initials(state.name);
+      document.getElementById("sidebar-avatar").textContent = initials(state.name);
+      document.getElementById("sidebar-student-name").textContent = `${state.name.split(/\s+/)[0]}'s roadmap`;
+      document.getElementById("account-email").textContent = activeEmail;
+      document.getElementById("welcome-message").innerHTML = `One clear next step at a time, <strong>${escapeHTML(state.name.split(/\s+/)[0])}.</strong>`;
+      document.getElementById("resume-name").value = state.name;
+      document.getElementById("resume-role").value = state.role || "";
+      document.getElementById("resume-project").value = state.project || "";
+      document.getElementById("resume-objective").value = state.objective || "";
+      document.getElementById("resume-education").value = state.education || "";
+      document.getElementById("resume-skills").value = state.skills || "";
+      document.getElementById("hero-title").textContent = state.role ? `Your path to ${state.role}.` : "Make your next 90 days count.";
+      document.getElementById("stage-one").textContent = Object.values(state.assessments).every(level => level >= 4) ? "Advance your skills" : Object.values(state.assessments).every(level => level === 0) ? "Build foundations" : "Fill your skill gaps";
+      const labels = Object.entries(skillConfig).map(([key, config]) => `${config.name}: ${state.assessments[key] === 0 ? "start with basics" : state.assessments[key] === 2 ? "continue from fundamentals" : "move to advanced practice"}`);
+      document.getElementById("assessment-summary").innerHTML = `<strong>Your starting point</strong> · ${labels.map(escapeHTML).join(" · ")} <button class="text-link" id="edit-assessment" style="margin-left:6px">Update</button>`;
+      document.getElementById("edit-assessment").addEventListener("click", () => {
+        populatePlanSettings();
+        openModal("assessment-modal");
+      });
+    }
+    function populatePlanSettings() {
+      for (const key of Object.keys(skillConfig)) document.getElementById(`edit-assess-${key}`).value = String(state.assessments[key]);
+      document.getElementById("edit-target-role").value = state.role || "";
+      document.getElementById("edit-branch").value = state.branch || "";
+      document.getElementById("edit-semester").value = state.semester || "";
+      document.getElementById("edit-daily-minutes").value = state.dailyStudyMinutes || 60;
+    }
+    function restoreInterviewSession(saved) {
+      if (!saved || typeof saved !== "object" || !Array.isArray(saved.questions) || !saved.questions.length || saved.questions.length > 15) return null;
+      const questions = saved.questions.map(item => window.LaunchpadInterview.questions.find(question => question.id === (item && item.id)));
+      if (questions.some(question => !question)) return null;
+      const answers = questions.map((_, index) => String(Array.isArray(saved.answers) ? saved.answers[index] || "" : "").slice(0, 6000));
+      const evaluations = questions.map((question, index) => saved.evaluations && saved.evaluations[index] && answers[index].trim() ? window.LaunchpadInterview.evaluateAnswer(question, answers[index]) : null);
+      const durationSeconds = Number(saved.durationSeconds);
+      const deadline = Number(saved.deadline);
+      const startedAt = Number(saved.startedAt);
+      return {
+        id: String(saved.id || `interview-restored-${Date.now()}`).slice(0, 100),
+        role: String(saved.role || "").slice(0, 100),
+        category: String(saved.category || "Mixed").slice(0, 40),
+        difficulty: String(saved.difficulty || "All levels").slice(0, 40),
+        questions, answers, evaluations,
+        currentIndex: Number.isInteger(saved.currentIndex) ? Math.max(0, Math.min(questions.length - 1, saved.currentIndex)) : 0,
+        startedAt: Number.isFinite(startedAt) ? startedAt : Date.now(),
+        durationSeconds: Number.isFinite(durationSeconds) ? Math.max(0, Math.min(3600, durationSeconds)) : 0,
+        deadline: Number.isFinite(deadline) && deadline > 0 ? deadline : null,
+        serverSessionId: typeof saved.serverSessionId === "string" ? saved.serverSessionId.slice(0, 100) : ""
+      };
+    }
+    function restoreInterviewResult(saved) {
+      if (!saved || typeof saved !== "object" || !Array.isArray(saved.questions)) return null;
+      const entries = saved.questions.flatMap(item => {
+        const questionId = item && item.question && item.question.id;
+        const question = window.LaunchpadInterview.questions.find(candidate => candidate.id === questionId);
+        const answer = String(item && item.answer || "").slice(0, 6000);
+        return question && item.evaluation && answer.trim()
+          ? [{ question, answer, evaluation: window.LaunchpadInterview.evaluateAnswer(question, answer) }]
+          : [];
+      });
+      const seconds = Math.max(0, Math.min(86400, Number(saved.durationSeconds) || 0));
+      const restored = window.LaunchpadInterview.summarizeSession({
+        id: String(saved.id || "").slice(0, 100),
+        role: String(saved.role || "").slice(0, 100),
+        category: String(saved.category || "Mixed").slice(0, 40),
+        difficulty: String(saved.difficulty || "All levels").slice(0, 40),
+        startedAt: Date.now() - seconds * 1000,
+        questions: entries.map(item => item.question),
+        answers: entries.map(item => item.answer),
+        evaluations: entries.map(item => item.evaluation)
+      });
+      const completionDate = new Date(saved.completedAt);
+      restored.completedAt = Number.isNaN(completionDate.getTime()) ? new Date().toISOString() : completionDate.toISOString();
+      restored.serverSessionId = typeof saved.serverSessionId === "string" ? saved.serverSessionId.slice(0, 100) : "";
+      return restored;
+    }
+    async function hydrateBackendRecords() {
+      const [roadmap, assessmentData, interviewData, achievementData] = await Promise.all([
+        backendRequest("/api/roadmap"),
+        backendRequest("/api/assessments"),
+        backendRequest("/api/interviews"),
+        backendRequest("/api/achievements")
+      ]);
+      state.tasks = roadmap.tasks.filter(task => task.completed).map(task => task.id);
+      const latestScores = {};
+      for (const attempt of assessmentData.history) {
+        if (!Object.prototype.hasOwnProperty.call(latestScores, attempt.skill)) latestScores[attempt.skill] = attempt.score;
+      }
+      for (const [skill, score] of Object.entries(latestScores)) {
+        if (Object.prototype.hasOwnProperty.call(state.skillScores, skill)) state.skillScores[skill] = score;
+      }
+      const serverResults = interviewData.sessions.filter(item => item.status === "completed").map(item => {
+        const entries = item.answers.map(answer => {
+          const question = interviewEngine.questions.find(candidate => candidate.id === answer.question_id);
+          if (!question) return null;
+          const evaluation = {
+            ...answer.feedback, score: answer.score,
+            nextTopic: answer.feedback.nextTopic || answer.feedback.revision_topic || question.topic
+          };
+          return { question, answer: answer.answer, evaluation };
+        }).filter(Boolean);
+        const completedAt = item.completed_at || item.created_at;
+        const duration = Number(item.duration_seconds) || 0;
+        const result = interviewEngine.summarizeSession({
+          id: item.id, role: item.role, category: item.category, difficulty: item.difficulty,
+          startedAt: Date.now() - duration * 1000,
+          questions: entries.map(entry => entry.question),
+          answers: entries.map(entry => entry.answer),
+          evaluations: entries.map(entry => entry.evaluation)
+        });
+        result.id = item.id;
+        result.serverSessionId = item.id;
+        result.score = item.score == null ? result.score : item.score;
+        result.durationSeconds = duration;
+        result.completedAt = completedAt;
+        return result;
+      });
+      const localOnlyResults = state.interviewHistory.filter(item =>
+        !item.serverSessionId && !serverResults.some(saved => saved.id === item.id)
+      );
+      state.interviewHistory = [...localOnlyResults, ...serverResults].slice(-100);
+      const currentServerSession = interviewData.sessions.find(item => item.status === "in_progress");
+      if (currentServerSession && (!state.interviewSession || state.interviewSession.serverSessionId === currentServerSession.id)) {
+        const questions = currentServerSession.question_ids.map(id => interviewEngine.questions.find(question => question.id === id));
+        if (questions.length && questions.every(Boolean)) {
+          const savedAnswers = new Map(currentServerSession.answers.map(answer => [answer.question_id, answer]));
+          state.interviewSession = {
+            id: state.interviewSession && state.interviewSession.id || `interview-${currentServerSession.id}`,
+            serverSessionId: currentServerSession.id,
+            role: currentServerSession.role, category: currentServerSession.category,
+            difficulty: currentServerSession.difficulty, questions,
+            answers: questions.map(question => savedAnswers.has(question.id) ? savedAnswers.get(question.id).answer : ""),
+            evaluations: questions.map(question => {
+              const saved = savedAnswers.get(question.id);
+              return saved ? { ...saved.feedback, score: saved.score, nextTopic: saved.feedback.nextTopic || question.topic } : null;
+            }),
+            currentIndex: Math.min(questions.findIndex(question => !savedAnswers.has(question.id)) < 0 ? questions.length - 1 : questions.findIndex(question => !savedAnswers.has(question.id)), questions.length - 1),
+            startedAt: Date.parse(currentServerSession.created_at) || Date.now(),
+            durationSeconds: currentServerSession.time_limit_seconds,
+            deadline: currentServerSession.time_limit_seconds ? (Date.parse(currentServerSession.created_at) || Date.now()) + currentServerSession.time_limit_seconds * 1000 : null
+          };
+        }
+      }
+      const savedAchievements = new Map(state.achievements.map(item => [item.id, item]));
+      for (const item of achievementData.achievements) {
+        if (!savedAchievements.has(item.id)) savedAchievements.set(item.id, {
+          id: item.id, title: item.title, issuer: "Launchpad milestone",
+          date: String(item.awarded_at || "").slice(0, 7), detail: item.detail
+        });
+      }
+      state.achievements = [...savedAchievements.values()];
+    }
+    function loadProfile(email) {
+      const stored = accounts[email];
+      activeEmail = email;
+      state = { ...baseState, ...stored, assessments: { ...baseState.assessments, ...(stored.assessments || {}) }, tasks: Array.isArray(stored.tasks) ? stored.tasks : [], achievements: Array.isArray(stored.achievements) ? stored.achievements : [], assessmentHistory: Array.isArray(stored.assessmentHistory) ? stored.assessmentHistory : [], interviewHistory: Array.isArray(stored.interviewHistory) ? stored.interviewHistory.map(restoreInterviewResult).filter(Boolean) : [], interviewSession: restoreInterviewSession(stored.interviewSession), activityLog: Array.isArray(stored.activityLog) ? stored.activityLog : [], learningProgress: { ...(stored.learningProgress || {}) }, bookmarks: Array.isArray(stored.bookmarks) ? stored.bookmarks : [], learningStats: { ...baseState.learningStats, ...(stored.learningStats || {}), attempts: Array.isArray(stored.learningStats && stored.learningStats.attempts) ? stored.learningStats.attempts : [] } };
+      state.skillScores = { ...baseState.skillScores, ...(stored.skillScores || {}) };
+      if (JSON.stringify(stored.interviewHistory || []) !== JSON.stringify(state.interviewHistory) ||
+          JSON.stringify(stored.interviewSession || null) !== JSON.stringify(state.interviewSession)) {
+        accounts[email] = { ...stored, interviewHistory: state.interviewHistory, interviewSession: state.interviewSession };
+        persistAccounts();
+      }
+      try { localStorage.setItem(activeKey, email); }
+      catch (error) { console.error("Could not remember the active student profile.", error); }
+      document.getElementById("auth-backdrop").classList.remove("open");
+      document.body.classList.remove("auth-required");
+      updateProfileUI();
+      updateProgress();
+      renderAchievements();
+      renderDocuments();
+      connectBackendProfile();
+    }
+    function openAuth(mode) {
+      authMode = mode;
+      const isCreate = mode === "create";
+      document.getElementById("create-fields").hidden = !isCreate;
+      document.getElementById("saved-account-field").hidden = isCreate || Object.keys(accounts).length === 0;
+      document.getElementById("auth-title").textContent = isCreate ? "Your journey starts here." : "Welcome back.";
+      document.getElementById("auth-description").textContent = isCreate ? "Create a student profile with a different email. Your own learning plan and resume stay separate." : "Choose a saved student profile or enter its email address to switch accounts.";
+      document.getElementById("auth-submit").textContent = isCreate ? "Create my learning profile →" : "Log in →";
+      document.getElementById("auth-switch").textContent = isCreate ? "Already have an account in this browser? Log in" : "Need a different email? Create another account";
+      document.getElementById("auth-error").textContent = "";
+      const savedAccount = document.getElementById("saved-account");
+      savedAccount.innerHTML = '<option value="">Choose a saved email (optional)</option>' + Object.keys(accounts).map(email => `<option value="${escapeHTML(email)}">${escapeHTML(email)}</option>`).join("");
+      document.getElementById("auth-backdrop").classList.add("open");
+      document.body.classList.add("auth-required");
+    }
+    function totalCheckpointCount() {
+      const learned = Object.values(state.assessments).reduce((sum, level) => sum + level, 0);
+      const completed = state.tasks.filter(id => {
+        const separator = id.lastIndexOf("-");
+        const skill = id.slice(0, separator);
+        return Number(id.slice(separator + 1)) >= state.assessments[skill];
+      }).length;
+      return learned + completed;
+    }
+    function taskId(skill, index) { return `${skill}-${index}`; }
+    function localDateKey(date = new Date()) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+    function awardAchievement(id, title, detail) {
+      if (state.achievements.some(item => item.id === id)) return false;
+      state.achievements.push({ id, title, issuer: "Launchpad milestone", date: localDateKey().slice(0, 7), detail });
+      return true;
+    }
+    function recalculateStreak() {
+      const activityDates = new Set(state.activityLog.map(item => item.date));
+      const today = localDateKey();
+      const yesterdayDate = new Date();
+      yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+      let cursor = activityDates.has(today) ? new Date(`${today}T12:00:00`) : activityDates.has(localDateKey(yesterdayDate)) ? yesterdayDate : null;
+      let streak = 0;
+      while (cursor && activityDates.has(localDateKey(cursor))) {
+        streak += 1;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      state.streak = streak;
+      state.lastStudyDate = activityDates.size ? [...activityDates].sort().at(-1) : "";
+    }
+    function recordActivity(type, label, minutes = 0) {
+      const now = new Date();
+      state.activityLog.push({ date: localDateKey(now), at: now.toISOString(), type, label, minutes: Math.max(0, Number(minutes) || 0) });
+      state.activityLog = state.activityLog.slice(-1000);
+      recalculateStreak();
+      const weekStart = new Date(now);
+      weekStart.setDate(weekStart.getDate() - 6);
+      const goalDays = new Set(state.activityLog.filter(item => new Date(`${item.date}T12:00:00`) >= new Date(`${localDateKey(weekStart)}T00:00:00`)).map(item => item.date)).size;
+      if (goalDays >= state.weeklyGoalDays) awardAchievement("weekly-goal", "Weekly learning goal", `Logged activity on ${goalDays} distinct days in the last seven days.`);
+      if (state.streak >= 3) awardAchievement("three-day-streak", "Three-day learning streak", "Recorded learning activity on three consecutive days.");
+    }
+    function skillForPracticeAttempt(attempt) {
+      const question = learningData.aptitude.find(item => item.id === attempt.questionId);
+      if (question) return "aptitude";
+      if (String(attempt.questionId || "").startsWith("dsa:")) return "dsa";
+      if (String(attempt.questionId || "").startsWith("web:")) return "web";
+      const interviewQuestion = window.LaunchpadInterview.questions.find(item => item.id === attempt.questionId);
+      if (interviewQuestion) return interviewQuestion.skill;
+      if (learningData.dsa.some(item => item.name === attempt.topic)) return "dsa";
+      if (learningData.web.some(item => item.name === attempt.topic)) return "web";
+      return null;
+    }
+    function practiceAccuracyForSkill(key) {
+      const attempts = state.learningStats.attempts.filter(item => item.kind !== "mock" && skillForPracticeAttempt(item) === key);
+      return attempts.length ? Math.round(attempts.filter(item => item.correct).length / attempts.length * 100) : null;
+    }
+    function interviewScoreForSkill(key) {
+      const scores = state.interviewHistory.flatMap(attempt => attempt.questions || []).filter(item => item.question.skill === key).map(item => item.evaluation.score);
+      return scores.length ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length) : null;
+    }
+    function adaptiveSkillScore(key) {
+      return window.LaunchpadInterview.adaptiveScore({
+        progress: skillProgress(key),
+        practiceAccuracy: practiceAccuracyForSkill(key),
+        interviewScore: interviewScoreForSkill(key)
+      });
+    }
+    function rolePrioritySkills() {
+      const role = String(state.role || "").toLowerCase();
+      if (role.includes("data analyst")) return ["aptitude", "web"];
+      if (role.includes("ai engineer")) return ["dsa", "aptitude"];
+      if (role.includes("web")) return ["web", "dsa"];
+      if (role.includes("software") || role.includes("developer") || role.includes("engineer")) return ["dsa", "web"];
+      return [];
+    }
+    function recommendationLessonName(skill, roadmapTopic) {
+      const topicMap = {
+        dsa: {
+          "Programming foundations": "Time & space complexity",
+          "Arrays & strings": "Arrays",
+          "Hash maps & sets": "Hashing",
+          "Stacks & queues": "Stacks",
+          "Trees & recursion": "Trees & BSTs",
+          "Graphs & interview patterns": "Graphs"
+        },
+        web: {
+          "HTML & the web": "HTML structure",
+          "CSS foundations": "CSS selectors",
+          "JavaScript basics": "JavaScript variables",
+          "Responsive components": "Responsive design",
+          "APIs & async JavaScript": "Fetch API",
+          "State & forms": "Forms",
+          "Build a portfolio project": "API integration & mini projects",
+          "Deploy & polish": "Backend APIs"
+        },
+        aptitude: {
+          "Number sense": "Number Systems",
+          "Ratios & percentages": "Ratios and Proportions",
+          "Averages & mixtures": "Averages",
+          "Time, speed & work": "Time and Work",
+          "Profit, loss & interest": "Profit and Loss",
+          "Logical reasoning": "Logical reasoning",
+          "Data interpretation": "Data Interpretation",
+          "Timed mixed practice": "Data Interpretation"
+        }
+      };
+      return topicMap[skill][roadmapTopic] || roadmapTopic;
+    }
+    function updateProgress() {
+      if (!state) return;
+      const done = Math.min(24, totalCheckpointCount());
+      const roadmapPercent = Math.round(done / 24 * 100);
+      document.getElementById("readiness-number").textContent = `${roadmapPercent}%`;
+      document.getElementById("readiness-ring").style.setProperty("--angle", `${roadmapPercent * 3.6}deg`);
+      document.getElementById("ready-caption").textContent = done ? "Your plan is tailored to you" : "Start with your foundations";
+      document.getElementById("skills-completed").textContent = `${done} / 24`;
+      document.getElementById("progress-label").textContent = `${roadmapPercent}% of learning path`;
+      document.getElementById("roadmap-fill").style.width = `${roadmapPercent}%`;
+      document.getElementById("study-time").textContent = `${Math.floor(state.studyMinutes / 60)}h ${state.studyMinutes % 60}m`;
+      document.getElementById("cgpa-display").textContent = state.cgpa ? Number(state.cgpa).toFixed(2) : "—";
+      document.getElementById("cgpa-input").value = state.cgpa || "";
+      document.getElementById("badge-count").textContent = state.tasks.length ? "1 / 1" : "0 / 1";
+      document.getElementById("achievement-summary").textContent = `${state.achievements.length} added · Add certificates, awards, and project wins.`;
+      document.getElementById("streak-count").textContent = `${state.streak}-day streak`;
+      const currentStage = Math.min(4, Math.floor(done / 6) + 1);
+      document.getElementById("current-stage-label").textContent = `STAGE ${currentStage} OF 4`;
+      document.querySelectorAll(".stage").forEach((stage, index) => {
+        stage.classList.toggle("done", index < currentStage - 1);
+        stage.classList.toggle("current", index === currentStage - 1);
+      });
+      for (const key of Object.keys(skillConfig)) {
+        const completed = Math.min(8, state.assessments[key] + state.tasks.filter(id => id.startsWith(`${key}-`) && Number(id.slice(key.length + 1)) >= state.assessments[key]).length);
+        const progressPercent = state.skillScores[key] === null ? Math.round(completed / 8 * 100) : state.skillScores[key];
+        const row = document.querySelector(`[data-skill-row="${key}"]`);
+        row.querySelector(".skill-track span").style.width = `${progressPercent}%`;
+        row.querySelector(".skill-percent").textContent = `${progressPercent}%${state.skillScores[key] === null ? "" : " · score"}`;
+      }
+      const academicRow = document.querySelector('[data-skill-row="academics"]');
+      const academicPercent = state.cgpa ? Math.round(Number(state.cgpa) * 10) : 0;
+      academicRow.querySelector(".skill-track span").style.width = `${academicPercent}%`;
+      academicRow.querySelector(".skill-percent").textContent = state.cgpa ? Number(state.cgpa).toFixed(1) : "—";
+      const interviewProgress = interviewScoreForSkill("communication");
+      const communicationRow = document.querySelector('[data-skill-row="communication"]');
+      communicationRow.querySelector(".skill-track span").style.width = `${interviewProgress === null ? 0 : interviewProgress}%`;
+      communicationRow.querySelector(".skill-percent").textContent = interviewProgress === null ? "—" : `${interviewProgress}% · interview`;
+      const attempted = state.learningStats.attempted || 0;
+      const correct = state.learningStats.correct || 0;
+      const lessonCount = Object.values(state.learningProgress).filter(item => item && item.completed).length;
+      document.getElementById("learning-attempted").textContent = attempted;
+      document.getElementById("learning-correct").textContent = correct;
+      document.getElementById("learning-accuracy").textContent = attempted ? `${Math.round(correct / attempted * 100)}%` : "—";
+      document.getElementById("learning-topics-done").textContent = lessonCount;
+      document.getElementById("learning-coding-done").textContent = Object.values(state.learningProgress).filter(item => item && item.codingCompleted).length;
+      renderTasks();
+      renderSkillVisualization();
+      renderRecommendations();
+      renderReadiness();
+      renderBadgeCollection();
+      renderAnalytics();
+    }
+    function renderTasks() {
+      if (!state) return;
+      const container = document.getElementById("tasks-list");
+      const pending = [];
+      for (const [skill, config] of Object.entries(skillConfig)) {
+        const nextIndex = config.topics.findIndex((_, index) => index >= state.assessments[skill] && !state.tasks.includes(taskId(skill, index)));
+        if (nextIndex >= 0) {
+          const [title, hint, minutes] = config.topics[nextIndex];
+          pending.push({ id: taskId(skill, nextIndex), skill, title, hint, minutes });
+        }
+      }
+      if (!pending.length) {
+        container.innerHTML = '<p class="cgpa-note">You have completed every topic in this learning path. Update your starting points to explore another level.</p>';
+        return;
+      }
+      container.innerHTML = pending.map(task => `<label class="task"><input type="checkbox" data-task="${escapeHTML(task.id)}" data-minutes="${task.minutes}"><span><strong>${escapeHTML(skillConfig[task.skill].name)} · ${escapeHTML(task.title)}</strong><small>${escapeHTML(task.hint)}</small></span><span class="task-time">${task.minutes} min</span></label>`).join("");
+      container.querySelectorAll("[data-task]").forEach(input => input.addEventListener("change", async () => {
+        const id = input.dataset.task;
+        if (input.checked && !state.tasks.includes(id)) {
+          if (backendEnabled) {
+            try {
+              await backendRequest(`/api/tasks/${encodeURIComponent(id)}/complete`, { method: "POST", body: "{}" });
+            } catch (error) {
+              input.checked = false;
+              console.error("The server could not save this completed task.", error);
+              showToast(`Task was not saved: ${error.message}`);
+              return;
+            }
+          }
+          state.tasks.push(id);
+          state.studyMinutes += Number(input.dataset.minutes);
+          recordActivity("learning task", skillConfig[id.slice(0, id.lastIndexOf("-"))].topics[Number(id.slice(id.lastIndexOf("-") + 1))][0], Number(input.dataset.minutes));
+          if (state.tasks.length === 1) awardAchievement("first-learning-task", "First learning task", "Completed a roadmap learning task.");
+          showToast(state.tasks.length === 1 ? "First learning checkpoint complete — your badge is yours! 🌱" : "Nice work. Your personalized path is moving forward.");
+        }
+        persistActiveProfile();
+        updateProgress();
+      }));
+    }
+    function skillProgress(key) {
+      if (state.skillScores[key] !== null) return state.skillScores[key];
+      const completed = state.tasks.filter(id => id.startsWith(`${key}-`) && Number(id.slice(key.length + 1)) >= state.assessments[key]).length;
+      return Math.round(Math.min(8, state.assessments[key] + completed) / 8 * 100);
+    }
+    function refreshProfileInsights() {
+      renderSkillVisualization();
+      renderRecommendations();
+      renderReadiness();
+      renderBadgeCollection();
+    }
+    function renderSkillVisualization() {
+      const evidence = Math.min(100, (state.project.trim() ? 55 : 0) + Math.min(45, state.achievements.length * 15));
+      const academic = state.cgpa ? Math.round(Number(state.cgpa) * 10) : 0;
+      const values = [skillProgress("dsa"), skillProgress("web"), skillProgress("aptitude"), academic, evidence];
+      const center = [100, 92];
+      const vertices = [[100, 18], [176, 73], [147, 163], [53, 163], [24, 73]];
+      const points = vertices.map(([x, y], index) => {
+        const ratio = values[index] / 100;
+        return `${(center[0] + (x - center[0]) * ratio).toFixed(1)},${(center[1] + (y - center[1]) * ratio).toFixed(1)}`;
+      }).join(" ");
+      document.getElementById("skill-radar-area").setAttribute("points", points);
+      const labels = ["DSA", "Web", "Aptitude", "Academics", "Portfolio"];
+      document.getElementById("skill-chart-legend").innerHTML = labels.map((label, index) => {
+        const isReported = index !== 3 || Boolean(state.cgpa);
+        const value = index === 3 ? state.cgpa ? Number(state.cgpa).toFixed(1) : "not set" : index === 4 && !evidence ? "add evidence" : `${values[index]}%`;
+        return `<div><span>${label}</span><strong>${isReported ? escapeHTML(value) : "not set"}</strong></div>`;
+      }).join("");
+    }
+    function renderRecommendations() {
+      const list = document.getElementById("recommendation-list");
+      const roleSkills = rolePrioritySkills();
+      const ranking = Object.keys(skillConfig).map(key => ({
+        key,
+        score: adaptiveSkillScore(key),
+        priority: Math.min(100, adaptiveSkillScore(key) + (roleSkills.includes(key) ? 5 : 0)),
+        practice: practiceAccuracyForSkill(key),
+        interview: interviewScoreForSkill(key)
+      })).sort((left, right) => left.priority - right.priority || left.score - right.score);
+      const recommendations = ranking.slice(0, 3).map((item, index) => {
+        const config = skillConfig[item.key];
+        const recommendedStart = Math.max(state.assessments[item.key], item.score < 50 ? 0 : item.score < 80 ? 2 : 6);
+        let nextIndex = config.topics.findIndex((_, topicIndex) => topicIndex >= recommendedStart && !state.tasks.includes(taskId(item.key, topicIndex)));
+        if (nextIndex < 0) nextIndex = config.topics.findIndex((_, topicIndex) => !state.tasks.includes(taskId(item.key, topicIndex)));
+        const topic = nextIndex < 0 ? null : config.topics[nextIndex];
+        const sources = ["starting-level/path progress", item.practice === null ? "" : "practice accuracy", item.interview === null ? "" : "interview feedback"].filter(Boolean).join(", ");
+        const etaDays = topic ? Math.max(1, Math.ceil(topic[2] / Math.max(15, Number(state.dailyStudyMinutes) || 60))) : 0;
+        const advice = topic
+          ? `Next: ${topic[0]} (${topic[2]} min; about ${etaDays} study day${etaDays === 1 ? "" : "s"} at your ${state.dailyStudyMinutes}-minute daily target). Lowest evidence score, with a 5-point priority tie-break for target-role skills. Inputs: ${sources}. ${state.role ? `Target role: ${state.role}. ` : ""}${state.semester ? `Semester ${state.semester}: schedule around coursework. ` : ""}${item.practice === null && item.interview === null ? "Take a skill check or practice interview to add more evidence." : `Assessment/path ${skillProgress(item.key)}%, practice ${item.practice === null ? "not attempted" : `${item.practice}%`}, interview ${item.interview === null ? "not attempted" : `${item.interview}%`}.`}`
+          : `${item.score}% adaptive score. All roadmap tasks in this area are complete; use mixed practice to strengthen it.`;
+        const complete = topic ? state.tasks.includes(taskId(item.key, nextIndex)) : false;
+        return `<div class="recommendation-item"><span class="recommendation-number">${index + 1}</span><div><strong>${escapeHTML(config.name)} · ${item.score}% evidence score${item.priority !== item.score ? ` · ${item.priority}% role priority` : ""}</strong><small>${escapeHTML(advice)} ${complete ? "Recommendation completed." : ""}</small>${topic ? `<button class="text-link" data-recommend-skill="${item.key}" data-recommend-topic="${escapeHTML(topic[0])}">Open ${escapeHTML(config.name)} practice →</button>` : ""}</div></div>`;
+      });
+      if (state.cgpa && Number(state.cgpa) < 7.5) {
+        recommendations.push('<div class="recommendation-item"><span class="recommendation-number">+</span><div><strong>Protect your academic eligibility</strong><small>Check target-company CGPA cutoffs and plan study time around upcoming coursework.</small></div></div>');
+      }
+      list.innerHTML = recommendations.join("");
+      list.querySelectorAll("[data-recommend-skill]").forEach(button => button.addEventListener("click", () => {
+        const tab = button.dataset.recommendSkill === "dsa" ? "dsa" : button.dataset.recommendSkill === "web" ? "web" : "aptitude";
+        setLearningTab(tab);
+        const topicName = recommendationLessonName(button.dataset.recommendSkill, button.dataset.recommendTopic);
+        learningState.query = topicName;
+        document.getElementById("learning-search").value = topicName;
+        renderTopicList();
+        openModal("learning-modal");
+      }));
+      document.getElementById("recommendation-caption").textContent = "Evidence score: roadmap/assessment 50%, practice accuracy 20%, interview 30%; missing evidence is renormalized. Matching target-role skills get a 5-point ordering tie-break.";
+      scheduleServerRecommendations();
+    }
+    function scheduleServerRecommendations() {
+      if (!backendEnabled || !activeEmail || backendProfileEmail !== activeEmail) return;
+      clearTimeout(backendRecommendationTimer);
+      backendRecommendationTimer = setTimeout(async () => {
+        const requestedEmail = activeEmail;
+        try {
+          const response = await backendRequest("/api/recommendations");
+          if (requestedEmail !== activeEmail) return;
+          const list = document.getElementById("recommendation-list");
+          list.innerHTML = response.recommendations.map((item, index) => {
+            const task = item.recommended_task;
+            const details = task
+              ? `${task.title} · ${task.difficulty} · ${task.estimated_minutes} min · about ${task.estimated_days} study day(s).`
+              : "All roadmap tasks in this area are complete.";
+            const button = task
+              ? `<button class="text-link" data-recommend-skill="${escapeHTML(item.skill)}" data-recommend-topic="${escapeHTML(task.title)}">Open ${escapeHTML(item.label)} practice →</button>`
+              : "";
+            return `<div class="recommendation-item"><span class="recommendation-number">${index + 1}</span><div><strong>${escapeHTML(item.label)} · ${item.evidence_score}% evidence${item.priority !== item.evidence_score ? ` · ${item.priority}% role priority` : ""}</strong><small>${escapeHTML(details)} ${escapeHTML(item.reason)}</small>${button}</div></div>`;
+          }).join("") || '<p class="analytics-empty">Complete a task or assessment to get a learning recommendation.</p>';
+          list.querySelectorAll("[data-recommend-skill]").forEach(button => button.addEventListener("click", () => {
+            const skill = button.dataset.recommendSkill;
+            setLearningTab(skill);
+            const topicName = recommendationLessonName(skill, button.dataset.recommendTopic);
+            learningState.query = topicName;
+            document.getElementById("learning-search").value = topicName;
+            renderTopicList();
+            openModal("learning-modal");
+          }));
+          document.getElementById("recommendation-caption").textContent = "Server-derived evidence: roadmap progress 50%, latest assessment 20%, interview performance 30%; missing evidence is reweighted. Recommendations use saved records.";
+        } catch (error) {
+          console.error("Could not load server recommendations.", error);
+          document.getElementById("recommendation-caption").textContent = `Server recommendations are unavailable: ${error.message}`;
+        }
+      }, 250);
+    }
+    function renderReadiness() {
+      const technical = Math.round(Object.keys(skillConfig).reduce((sum, key) => sum + skillProgress(key), 0) / Object.keys(skillConfig).length);
+      const evidence = Math.min(100, (state.project.trim() ? 55 : 0) + Math.min(45, state.achievements.length * 15));
+      const dimensions = [{ label: "Skills & practice", value: technical, weight: 0.65, included: true }];
+      const interviews = state.interviewHistory.filter(item => item.answered > 0).map(item => item.score).filter(Number.isFinite);
+      if (interviews.length) dimensions.push({ label: "Interview practice", value: Math.round(interviews.reduce((sum, score) => sum + score, 0) / interviews.length), weight: 0.15, included: true });
+      if (state.cgpa) dimensions.push({ label: "Academics", value: Math.round(Number(state.cgpa) * 10), weight: 0.2, included: true });
+      if (state.project.trim() || state.achievements.length) dimensions.push({ label: "Resume evidence", value: evidence, weight: 0.15, included: true });
+      const totalWeight = dimensions.reduce((sum, item) => sum + item.weight, 0);
+      const score = Math.round(dimensions.reduce((sum, item) => sum + item.value * item.weight, 0) / totalWeight);
+      document.getElementById("readiness-analysis-score").textContent = `${score}%`;
+      document.getElementById("readiness-analysis-note").textContent = "Estimated preparation snapshot";
+      document.getElementById("readiness-rating").textContent = score >= 80 ? "STRONG" : score >= 60 ? "BUILDING" : score >= 35 ? "DEVELOPING" : "STARTING";
+      document.getElementById("readiness-breakdown").innerHTML = dimensions.map(item => `<div class="readiness-metric"><div class="readiness-metric-top"><span>${item.label}</span><strong>${item.value}%</strong></div><div class="readiness-track"><span style="width:${item.value}%"></span></div></div>`).join("") + '<p class="storage-note">Scores are estimates from your learning path and self-reported details, not a guarantee of placement or company eligibility.</p>';
+      document.getElementById("readiness-analysis-note").textContent = [state.cgpa ? "CGPA" : "", interviews.length ? "interview history" : "", "skills", state.project.trim() || state.achievements.length ? "resume evidence" : ""].filter(Boolean).join(" · ");
+    }
+    function renderAnalytics() {
+      const container = document.getElementById("analytics-dashboard");
+      if (!container) return;
+      const now = new Date();
+      const weekDates = Array.from({ length: 7 }, (_, index) => {
+        const date = new Date(now);
+        date.setDate(date.getDate() - (6 - index));
+        return localDateKey(date);
+      });
+      const activityByDate = new Map();
+      for (const item of state.activityLog) activityByDate.set(item.date, (activityByDate.get(item.date) || 0) + 1);
+      const maximumActivity = Math.max(1, ...weekDates.map(date => activityByDate.get(date) || 0));
+      const weekly = weekDates.map((date, index) => `<div class="analytics-day" aria-label="${date}: ${activityByDate.get(date) || 0} logged activities"><div class="analytics-day-track"><span style="height:${Math.round((activityByDate.get(date) || 0) / maximumActivity * 100)}%"></span></div><span>${new Date(`${date}T12:00:00`).toLocaleDateString(undefined, { weekday: "short" })}</span></div>`).join("");
+      const taskTotal = Object.values(skillConfig).reduce((sum, item) => sum + item.topics.length, 0);
+      const completedLearningTopics = Object.values(state.learningProgress).filter(item => item && item.completed).length;
+      const uniquePractice = new Set(state.learningStats.attempts.filter(item => item.kind !== "mock").map(item => item.questionId)).size;
+      const accuracyByTopic = {};
+      for (const attempt of state.learningStats.attempts.filter(item => item.kind !== "mock")) {
+        accuracyByTopic[attempt.topic] ||= { correct: 0, total: 0 };
+        accuracyByTopic[attempt.topic].total += 1;
+        if (attempt.correct) accuracyByTopic[attempt.topic].correct += 1;
+      }
+      const topicRanking = Object.entries(accuracyByTopic).map(([topic, result]) => ({ topic, score: Math.round(result.correct / result.total * 100), total: result.total })).sort((left, right) => left.score - right.score);
+      const history = state.interviewHistory.slice(-5).reverse();
+      const priorAssessment = state.assessmentHistory.at(-2);
+      const latestAssessment = state.assessmentHistory.at(-1);
+      const assessmentDelta = priorAssessment && latestAssessment
+        ? Object.keys(skillConfig).map(key => `${skillConfig[key].name} ${latestAssessment.scores[key] - priorAssessment.scores[key] >= 0 ? "+" : ""}${latestAssessment.scores[key] - priorAssessment.scores[key]} pts`).join(" · ")
+        : "Complete another assessment to compare scores.";
+      container.innerHTML = `<section class="analytics-panel"><h4>Weekly learning activity · last 7 days</h4>${state.activityLog.length ? `<div class="analytics-bars">${weekly}</div><p class="analytics-empty">${new Set(weekDates.filter(date => activityByDate.has(date))).size} active day(s) this week · goal ${state.weeklyGoalDays} days</p>` : '<p class="analytics-empty">No dated activity yet. Complete a lesson, practice question, task, or interview to start this chart.</p>'}</section><section class="analytics-panel"><h4>Progress &amp; assessment</h4><div class="analytics-list"><div class="analytics-line"><span>Roadmap tasks recorded</span><strong>${Math.min(taskTotal, state.tasks.length)} / ${taskTotal}</strong></div><div class="analytics-line"><span>Learning hub topics passed</span><strong>${completedLearningTopics}</strong></div><div class="analytics-line"><span>Unique practice questions</span><strong>${uniquePractice}</strong></div><div class="analytics-line"><span>Interview sessions</span><strong>${state.interviewHistory.length}</strong></div><div class="analytics-line"><span>Assessment change</span><strong>${escapeHTML(assessmentDelta)}</strong></div></div></section><section class="analytics-panel"><h4>Topic accuracy · attempts</h4>${topicRanking.length ? `<div class="analytics-list">${topicRanking.slice(0, 4).map(item => `<div class="analytics-line"><span>${escapeHTML(item.topic)} · ${item.total} attempt(s)</span><strong>${item.score}%</strong></div>`).join("")}</div><p class="analytics-empty">Weakest attempted topic first. Unattempted topics are not scored.</p>` : '<p class="analytics-empty">Topic performance will appear after you answer practice questions.</p>'}</section><section class="analytics-panel"><h4>Interview score history</h4>${history.length ? `<div class="analytics-list">${history.map(item => `<div class="analytics-line"><span>${escapeHTML(item.role)} · ${new Date(item.completedAt).toLocaleDateString()}</span><strong>${item.score}%</strong></div>`).join("")}</div>` : '<p class="analytics-empty">No interview results yet. Your history will appear here after a practice interview.</p>'}</section>`;
+    }
+    function renderBadgeCollection() {
+      const dsaCompleted = state.tasks.filter(id => id.startsWith("dsa-")).length;
+      const badges = [
+        ["🌱", "First steps", state.tasks.length > 0],
+        ["🔥", "Steady learner", state.tasks.length >= 5],
+        ["⌘", "Problem solver", dsaCompleted >= 4],
+        ["🚀", "Portfolio builder", Boolean(state.project.trim())],
+        ["🏅", "Credential collector", state.achievements.length >= 3],
+        ["🧭", "Self-aware learner", Object.values(state.skillScores).some(score => score !== null)]
+      ];
+      const unlocked = badges.filter(([, , earned]) => earned).length;
+      document.getElementById("badge-count").textContent = state.tasks.length ? "1 / 1" : "0 / 1";
+      document.getElementById("achievement-summary").textContent = `${state.achievements.length} added · ${unlocked} of ${badges.length} milestones earned.`;
+      document.getElementById("badge-collection").innerHTML = `<p class="badge-total">${unlocked} of ${badges.length} milestones earned</p>` + badges.map(([icon, name, earned]) => `<div class="earned-badge${earned ? " unlocked" : ""}"><span>${icon}</span><span>${name}</span></div>`).join("");
+    }
+    function renderSkillCheck() {
+      const container = document.getElementById("skill-check-questions");
+      container.innerHTML = Object.entries(skillConfig).flatMap(([key, config]) => config.check.map((question, index) => {
+        const options = question[1].map((option, optionIndex) => `<option value="${optionIndex}">${escapeHTML(option)}</option>`).join("");
+        return `<div class="assessment-question"><strong>${escapeHTML(config.name)} · ${index + 1}. ${escapeHTML(question[0])}</strong><select data-check-skill="${key}" data-check-index="${index}"><option value="">Choose an answer</option>${options}</select></div>`;
+      })).join("");
+      document.getElementById("skill-check-feedback").classList.remove("show");
+    }
+    const learningData = window.LaunchpadLearningData;
+    const learningState = { tab: "dsa", topicKey: "", topicType: "", mode: "learn", query: "", category: "All", difficulty: "All", retryIncorrect: false, test: null, timer: null };
+    function progressKey(type, topic) { return `${type}:${topic}`; }
+    function setLearningTab(tab) {
+      learningState.tab = tab;
+      learningState.mode = "learn";
+      learningState.topicKey = "";
+      learningState.topicType = "";
+      learningState.query = "";
+      learningState.category = "All";
+      learningState.difficulty = "All";
+      learningState.retryIncorrect = false;
+      document.querySelectorAll("[data-learning-tab]").forEach(button => button.classList.toggle("active", button.dataset.learningTab === tab));
+      renderLearningHub();
+    }
+    function topicEntries() {
+      if (learningState.tab === "dsa") return learningData.dsa.map(item => ({ ...item, type: "dsa" }));
+      if (learningState.tab === "web") return learningData.web.map(item => ({ ...item, type: "web" }));
+      if (learningState.tab === "aptitude") return learningData.aptitude.map(item => ({
+        ...item,
+        name: item.topic,
+        type: "aptitude",
+        intro: `${item.category} practice · ${item.difficulty} level.`,
+        concepts: `Review the ${item.topic} method, write down the known values, and verify the result using the explanation.`,
+        example: { input: item.question, output: item.explanation },
+        hint: "Work through the given values step by step, then compare your calculation with the explanation.",
+        practiceUrl: aptitudeResource(item.category)
+      }));
+      return [];
+    }
+    function aptitudeResource(category) {
+      return category === "Verbal Ability"
+        ? "https://www.indiabix.com/verbal-ability/questions-and-answers/"
+        : category === "Logical Reasoning"
+          ? "https://www.indiabix.com/logical-reasoning/questions-and-answers/"
+          : "https://www.indiabix.com/aptitude/questions-and-answers/";
+    }
+    function learningQuestion(entry) {
+      return {
+        id: entry.id || `${entry.type}:${entry.name}`,
+        topic: entry.topic || entry.name,
+        category: entry.category || (entry.type === "dsa" ? "DSA" : "Web Development"),
+        difficulty: entry.difficulty || "Beginner",
+        question: entry.question,
+        options: entry.options,
+        answer: entry.answer,
+        explanation: entry.explanation,
+        marks: entry.marks || 1,
+        timeLimit: entry.timeLimit || 60,
+        hint: entry.hint,
+        example: entry.example
+      };
+    }
+    function renderLearningHub() {
+      const toolbar = document.getElementById("learning-toolbar");
+      const panel = document.getElementById("learning-panel");
+      const isTopics = ["dsa", "web", "aptitude"].includes(learningState.tab);
+      if (isTopics) {
+        const categoryOptions = learningState.tab === "aptitude"
+          ? ["All", ...new Set(learningData.aptitude.map(item => item.category))]
+          : ["All"];
+        toolbar.innerHTML = `<input id="learning-search" type="search" placeholder="Search topics or questions…" aria-label="Search learning topics" value="${escapeHTML(learningState.query)}"><select id="learning-category" aria-label="Filter by category">${categoryOptions.map(option => `<option${option === learningState.category ? " selected" : ""}>${escapeHTML(option)}</option>`).join("")}</select><select id="learning-difficulty" aria-label="Filter by difficulty"><option>All</option><option${learningState.difficulty === "Easy" ? " selected" : ""}>Easy</option><option${learningState.difficulty === "Medium" ? " selected" : ""}>Medium</option><option${learningState.difficulty === "Hard" ? " selected" : ""}>Hard</option></select><label class="retry-toggle"><input id="learning-retry-wrong" type="checkbox" ${learningState.retryIncorrect ? "checked" : ""}> Retry missed</label>`;
+        panel.innerHTML = '<div class="learning-layout"><div class="learning-topic-list" id="learning-topic-list"></div><article class="learning-content" id="learning-content"><p>Choose a topic to view the lesson and practice question.</p></article></div>';
+        document.getElementById("learning-search").addEventListener("input", event => { learningState.query = event.target.value; renderTopicList(); });
+        document.getElementById("learning-category").addEventListener("change", event => { learningState.category = event.target.value; renderTopicList(); });
+        document.getElementById("learning-difficulty").addEventListener("change", event => { learningState.difficulty = event.target.value; renderTopicList(); });
+        document.getElementById("learning-retry-wrong").addEventListener("change", event => { learningState.retryIncorrect = event.target.checked; renderTopicList(); });
+        renderTopicList();
+      } else if (learningState.tab === "mock") {
+        toolbar.innerHTML = "";
+        renderMockSetup(panel);
+      } else {
+        toolbar.innerHTML = '<input id="company-search" type="search" placeholder="Find a company…" aria-label="Search companies"><span></span><span></span>';
+        panel.innerHTML = `<p class="cgpa-note">Preparation categories: aptitude, logical reasoning, verbal ability, coding, technical interviews, and HR interviews. Patterns change; these original practice resources are not confirmed past questions.</p><div class="company-grid" id="company-grid"></div>`;
+        document.getElementById("company-search").addEventListener("input", renderCompanies);
+        renderCompanies();
+      }
+    }
+    function renderTopicList() {
+      const container = document.getElementById("learning-topic-list");
+      if (!container) return;
+      const query = learningState.query.trim().toLowerCase();
+      const latestAttempts = new Map();
+      for (const attempt of state.learningStats.attempts.filter(item => item.kind !== "mock")) latestAttempts.set(attempt.questionId, attempt);
+      const entries = topicEntries().filter(entry => {
+        const categoryMatches = learningState.category === "All" || entry.category === learningState.category;
+        const difficultyMatches = learningState.difficulty === "All" || entry.difficulty === learningState.difficulty;
+        const questionId = entry.id || `${entry.type}:${entry.name}`;
+        const incorrectMatches = !learningState.retryIncorrect || (latestAttempts.has(questionId) && !latestAttempts.get(questionId).correct);
+        return categoryMatches && difficultyMatches && incorrectMatches && (!query || `${entry.name} ${entry.question} ${entry.intro}`.toLowerCase().includes(query));
+      });
+      if (!entries.length) {
+        container.innerHTML = `<p class="storage-note">${learningState.retryIncorrect ? "No previously missed questions match these filters. Answer some practice questions or turn off Retry missed." : "No topics match these filters. Try a broader search."}</p>`;
+        if (learningState.mode !== "quiz") document.getElementById("learning-content").innerHTML = "<p>Choose a topic to view the lesson and practice question.</p>";
+        return;
+      }
+      container.innerHTML = entries.map((entry, index) => {
+        const key = progressKey(entry.type, entry.id || entry.name);
+        const complete = Boolean(state.learningProgress[key] && state.learningProgress[key].completed);
+        return `<button class="learning-topic-button${learningState.topicKey === key ? " active" : ""}" data-topic-index="${index}"><strong>${escapeHTML(entry.name)} <span class="topic-progress-tag${complete ? " done" : ""}">${complete ? "Completed" : "Not started"}</span></strong><small>${escapeHTML(entry.difficulty || "Beginner")} · ${escapeHTML(entry.category || (entry.type === "dsa" ? "DSA" : "Web"))}</small></button>`;
+      }).join("");
+      container.querySelectorAll("[data-topic-index]").forEach(button => button.addEventListener("click", () => {
+        const entry = entries[Number(button.dataset.topicIndex)];
+        learningState.topicKey = progressKey(entry.type, entry.id || entry.name);
+        learningState.topicType = entry.type;
+        learningState.mode = "learn";
+        renderTopicList();
+        renderTopicDetail(entry);
+      }));
+      if (!entries.some(entry => progressKey(entry.type, entry.id || entry.name) === learningState.topicKey)) {
+        learningState.topicKey = progressKey(entries[0].type, entries[0].id || entries[0].name);
+        learningState.topicType = entries[0].type;
+        renderTopicList();
+        renderTopicDetail(entries[0]);
+      } else {
+        const selected = entries.find(entry => progressKey(entry.type, entry.id || entry.name) === learningState.topicKey);
+        if (selected && learningState.mode !== "quiz") renderTopicDetail(selected);
+      }
+    }
+    function renderTopicDetail(entry) {
+      const container = document.getElementById("learning-content");
+      const key = progressKey(entry.type, entry.id || entry.name);
+      const complete = Boolean(state.learningProgress[key] && state.learningProgress[key].completed);
+      const bookmarked = state.bookmarks.includes(key);
+      const mode = learningState.mode;
+      if (mode === "quiz") {
+        renderPracticeQuestion(container, learningQuestion(entry), { kind: "topic", topicKey: key, topicType: entry.type, index: 0, answers: [], submitted: false });
+        return;
+      }
+      const concepts = Array.isArray(entry.concepts) ? entry.concepts : [entry.concepts];
+      const codingPractice = entry.codingExercise ? `<h4>Coding exercise</h4><p>${escapeHTML(entry.codingExercise)}</p><p><strong>Approach hint:</strong> ${escapeHTML(entry.solution)}</p><textarea id="coding-attempt" placeholder="Write your approach, pseudocode, or code here…">${escapeHTML(state.learningProgress[key] && state.learningProgress[key].codingAttempt || "")}</textarea><div class="hero-actions"><button class="save-cgpa" id="save-coding-attempt">Save coding attempt</button>${state.learningProgress[key] && state.learningProgress[key].codingCompleted ? '<span class="topic-progress-tag done">Exercise attempted</span>' : ""}</div>` : "";
+      container.innerHTML = `<span class="topic-progress-tag${complete ? " done" : ""}">${complete ? "Lesson quiz passed" : "Complete the quiz to mark this topic done"}</span><h3 style="margin-top:9px">${escapeHTML(entry.name)}</h3><p>${escapeHTML(entry.intro)}</p><h4>Key concepts</h4><ul>${concepts.map(concept => `<li>${escapeHTML(concept)}</li>`).join("")}</ul><h4>Worked example</h4><p><strong>Input:</strong> ${escapeHTML(entry.example.input)}<br><strong>Output:</strong> ${escapeHTML(entry.example.output)}</p><h4>Practice prompt</h4><p>${escapeHTML(entry.question)}</p><p><strong>Hint:</strong> ${escapeHTML(entry.hint)}</p>${codingPractice}${entry.solution ? `<details><summary style="cursor:pointer;font-size:9px">Show solution approach</summary><p>${escapeHTML(entry.solution)}</p></details>` : ""}<div class="learning-resource-links"><a href="${escapeHTML(entry.practiceUrl)}" target="_blank" rel="noopener noreferrer">Read / practice resource ↗</a><a href="https://www.youtube.com/results?search_query=${encodeURIComponent(`${entry.name} ${entry.type === "dsa" ? "data structures algorithms tutorial" : "web development tutorial"}`)}" target="_blank" rel="noopener noreferrer">Find a tutorial ↗</a><button class="save-cgpa" id="toggle-topic-bookmark">${bookmarked ? "★ Saved topic" : "☆ Save topic"}</button></div><button class="primary-button" id="start-topic-quiz">Start topic quiz&nbsp; →</button>`;
+      document.getElementById("toggle-topic-bookmark").addEventListener("click", () => {
+        state.bookmarks = state.bookmarks || [];
+        state.bookmarks = bookmarked ? state.bookmarks.filter(item => item !== key) : [...state.bookmarks, key];
+        persistActiveProfile();
+        renderTopicDetail(entry);
+      });
+      const saveAttempt = document.getElementById("save-coding-attempt");
+      if (saveAttempt) saveAttempt.addEventListener("click", () => {
+        const attempt = document.getElementById("coding-attempt").value.trim();
+        if (!attempt) { showToast("Write an approach or code before saving your exercise."); return; }
+        const previous = state.learningProgress[key] || {};
+        state.learningProgress[key] = { ...previous, codingAttempt: attempt, codingCompleted: true, codingCompletedAt: new Date().toISOString() };
+        recordActivity("coding exercise", entry.name);
+        persistActiveProfile();
+        updateProgress();
+        renderTopicDetail(entry);
+        showToast("Coding exercise attempt saved to your learning progress.");
+      });
+      document.getElementById("start-topic-quiz").addEventListener("click", () => {
+        learningState.mode = "quiz";
+        renderTopicDetail(entry);
+      });
+    }
+    function renderPracticeQuestion(container, question, session) {
+      const title = session.kind === "mock" ? `Question ${session.index + 1} of ${session.questions.length}` : "Topic checkpoint";
+      const previous = session.answers[session.index];
+      container.innerHTML = `${session.kind === "mock" && session.testName ? `<p class="stage-label">${escapeHTML(session.testName)}</p>` : ""}<div class="mock-topline"><span>${title} · ${escapeHTML(question.difficulty || "Practice")}</span>${session.kind === "mock" ? `<span class="mock-timer" id="mock-time-remaining"></span>` : ""}</div><h3 style="margin-top:12px">${escapeHTML(question.question)}</h3>${question.example ? `<p><strong>Example:</strong> ${escapeHTML(question.example.input)} → ${escapeHTML(question.example.output)}</p><p><strong>Hint:</strong> ${escapeHTML(question.hint)}</p>` : ""}<div class="question-options">${question.options.map((option, index) => {
+        const selected = previous === index;
+        let resultClass = "";
+        if (session.submitted) resultClass = index === question.answer ? " correct" : selected ? " incorrect" : "";
+        return `<button class="question-option${selected ? " selected" : ""}${resultClass}" data-option="${index}" ${session.submitted ? "disabled" : ""}>${String.fromCharCode(65 + index)}. ${escapeHTML(option)}</button>`;
+      }).join("")}</div>${session.kind === "mock" ? `<label class="mock-mark"><input type="checkbox" id="mock-review" ${session.review.has(session.index) ? "checked" : ""} ${session.submitted ? "disabled" : ""}> Mark for review</label><div class="hero-actions"><button class="ghost-button" id="mock-prev" ${session.index === 0 ? "disabled" : ""}>← Previous</button><button class="ghost-button" id="mock-next" ${session.index === session.questions.length - 1 ? "disabled" : ""}>Next →</button><button class="primary-button" id="mock-submit">${session.submitted ? "Submitted" : "Submit test"}</button></div>` : `<div class="hero-actions"><button class="primary-button" id="check-topic-answer" ${previous === undefined ? "disabled" : ""}>Check answer&nbsp; →</button><button class="ghost-button" id="back-to-lesson">Back to lesson</button></div>`}${session.submitted ? `<div class="learning-feedback">${escapeHTML(question.options[question.answer])} — ${escapeHTML(question.explanation)}</div>` : session.feedback ? `<div class="learning-feedback">${session.feedback}</div>` : ""}`;
+      container.querySelectorAll("[data-option]").forEach(button => button.addEventListener("click", () => {
+        if (session.submitted) return;
+        session.answers[session.index] = Number(button.dataset.option);
+        renderPracticeQuestion(container, question, session);
+      }));
+      if (session.kind === "topic") {
+        container.querySelector("#check-topic-answer").addEventListener("click", () => {
+          const correct = session.answers[0] === question.answer;
+          state.learningStats.attempted += 1;
+          state.learningStats[correct ? "correct" : "incorrect"] += 1;
+          state.learningStats.attempts.push({ questionId: question.id, topic: question.topic, correct, at: new Date().toISOString() });
+          state.learningStats.attempts = state.learningStats.attempts.slice(-1000);
+          recordActivity("practice", question.topic);
+          const completedQuestionCount = new Set(state.learningStats.attempts.filter(item => item.kind !== "mock").map(item => item.questionId)).size;
+          if (completedQuestionCount >= 5) awardAchievement("five-practice-questions", "Five unique practice questions", "Attempted at least five distinct practice questions.");
+          session.feedback = correct ? `Correct. ${question.explanation}` : `Not quite. The correct answer is ${question.options[question.answer]}. ${question.explanation}`;
+          if (correct) {
+            state.learningProgress[session.topicKey] = { ...(state.learningProgress[session.topicKey] || {}), completed: true, completedAt: new Date().toISOString() };
+            state.achievements = state.achievements || [];
+            const badgeId = `topic:${session.topicKey}`;
+            if (!state.achievements.some(item => item.id === badgeId)) state.achievements.push({ id: badgeId, title: `${question.topic} completed`, issuer: "Launchpad learning path", date: localDateKey().slice(0, 7), detail: "Passed the associated topic checkpoint." });
+          }
+          persistActiveProfile();
+          updateProgress();
+          renderPracticeQuestion(container, question, session);
+          renderTopicList();
+        });
+        container.querySelector("#back-to-lesson").addEventListener("click", () => { learningState.mode = "learn"; renderTopicList(); });
+      } else {
+        if (session.kind !== "mock") return;
+        const review = container.querySelector("#mock-review");
+        if (review) review.addEventListener("change", () => {
+          if (review.checked) session.review.add(session.index);
+          else session.review.delete(session.index);
+          const navButton = container.parentElement.querySelector(`[data-mock-nav="${session.index}"]`);
+          if (navButton) navButton.classList.toggle("review", review.checked);
+        });
+        const previousButton = container.querySelector("#mock-prev");
+        const nextButton = container.querySelector("#mock-next");
+        if (previousButton) previousButton.addEventListener("click", () => { session.index -= 1; renderMockQuestion(); });
+        if (nextButton) nextButton.addEventListener("click", () => { session.index += 1; renderMockQuestion(); });
+        const submit = container.querySelector("#mock-submit");
+        if (submit && !session.submitted) submit.addEventListener("click", submitMockTest);
+      }
+    }
+    function fullQuestionPool() {
+      const technical = [
+        ...learningData.dsa.map(item => ({ ...learningQuestion({ ...item, type: "dsa", category: "DSA" }), difficulty: item.difficulty === "Beginner" ? "Easy" : item.difficulty })),
+        ...learningData.web.map(item => ({ ...learningQuestion({ ...item, type: "web", category: "Web Development" }), difficulty: "Easy" }))
+      ];
+      return [...technical, ...learningData.aptitude];
+    }
+    function renderMockSetup(panel) {
+      const categories = ["All categories", "DSA", "Web Development", "Quantitative Aptitude", "Logical Reasoning", "Verbal Ability"];
+      panel.innerHTML = `<div class="learning-content"><h3>Build a placement mock test</h3><p>Choose a mix that fits your practice session. The timer submits automatically when it reaches zero.</p><div class="mock-settings"><label>Question count<select id="mock-count"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></label><label>Question category<select id="mock-category">${categories.map(item => `<option>${item}</option>`).join("")}</select></label><label>Difficulty<select id="mock-difficulty"><option>All</option><option>Easy</option><option>Medium</option><option>Hard</option></select></label><label>Time limit (minutes)<input id="mock-minutes" type="number" min="1" max="120" value="10"></label></div><p id="mock-availability" class="storage-note"></p><button class="primary-button" id="begin-mock-test">Start mock test&nbsp; →</button><div id="mock-session-content"></div></div>`;
+      const updateAvailability = () => {
+        const matching = availableMockQuestions();
+        document.getElementById("mock-availability").textContent = `${matching.length} questions available for this selection.`;
+      };
+      ["mock-count", "mock-category", "mock-difficulty"].forEach(id => document.getElementById(id).addEventListener("change", updateAvailability));
+      updateAvailability();
+      document.getElementById("begin-mock-test").addEventListener("click", startMockTest);
+    }
+    function availableMockQuestions() {
+      const panel = document.getElementById("learning-panel");
+      if (!panel.querySelector("#mock-category")) return fullQuestionPool();
+      const category = document.getElementById("mock-category").value;
+      const difficulty = document.getElementById("mock-difficulty").value;
+      return fullQuestionPool().filter(question =>
+        (category === "All categories" || question.category === category) &&
+        (difficulty === "All" || question.difficulty === difficulty)
+      );
+    }
+    function startMockTest() {
+      const pool = availableMockQuestions();
+      const requested = Number(document.getElementById("mock-count").value);
+      const minutes = Number(document.getElementById("mock-minutes").value);
+      if (!Number.isInteger(minutes) || minutes < 1 || minutes > 120) {
+        showToast("Set a mock-test time between 1 and 120 minutes.");
+        return;
+      }
+      if (!pool.length) { showToast("No questions match those filters. Choose a different category or difficulty."); return; }
+      const count = Math.min(requested, pool.length);
+      const questions = [...pool].sort(() => Math.random() - 0.5).slice(0, count);
+      clearInterval(learningState.timer);
+      learningState.test = {
+        kind: "mock", testName: "Placement practice", questions, answers: Array(count).fill(undefined),
+        review: new Set(), index: 0, submitted: false, remaining: minutes * 60, startedAt: Date.now()
+      };
+      document.getElementById("begin-mock-test").hidden = true;
+      renderMockQuestion();
+      learningState.timer = setInterval(() => {
+        if (!learningState.test || learningState.test.submitted) return;
+        learningState.test.remaining -= 1;
+        const timer = document.getElementById("mock-time-remaining");
+        if (timer) timer.textContent = formatTime(learningState.test.remaining);
+        if (learningState.test.remaining <= 0) {
+          clearInterval(learningState.timer);
+          submitMockTest(true);
+        }
+      }, 1000);
+    }
+    function formatTime(totalSeconds) {
+      const safeSeconds = Math.max(0, totalSeconds);
+      return `${Math.floor(safeSeconds / 60).toString().padStart(2, "0")}:${(safeSeconds % 60).toString().padStart(2, "0")}`;
+    }
+    function renderMockQuestion() {
+      const session = learningState.test;
+      if (!session) return;
+      const content = document.getElementById("mock-session-content");
+      const question = session.questions[session.index];
+      const nav = `<div class="mock-nav">${session.questions.map((_, index) => `<button data-mock-nav="${index}" class="${index === session.index ? "current" : ""}${session.review.has(index) ? " review" : ""}" aria-label="Go to question ${index + 1}">${index + 1}</button>`).join("")}</div>`;
+      content.innerHTML = `${nav}<div id="mock-question-area"></div>${session.submitted ? `<div class="learning-feedback" id="mock-results"></div>` : ""}`;
+      content.querySelectorAll("[data-mock-nav]").forEach(button => button.addEventListener("click", () => {
+        session.index = Number(button.dataset.mockNav);
+        renderMockQuestion();
+      }));
+      const area = content.querySelector("#mock-question-area");
+      renderPracticeQuestion(area, question, session);
+      const timer = content.querySelector("#mock-time-remaining");
+      if (timer) timer.textContent = formatTime(session.remaining);
+      if (session.submitted) renderMockResults(content.querySelector("#mock-results"), session);
+    }
+    function submitMockTest(fromTimer = false) {
+      const session = learningState.test;
+      if (!session || session.submitted) return;
+      session.submitted = true;
+      clearInterval(learningState.timer);
+      const timeTaken = Math.max(0, Math.round((Date.now() - session.startedAt) / 1000));
+      const correctByTopic = {};
+      let correct = 0;
+      session.questions.forEach((question, index) => {
+        const isCorrect = session.answers[index] === question.answer;
+        if (isCorrect) correct += 1;
+        correctByTopic[question.topic] = correctByTopic[question.topic] || { correct: 0, total: 0 };
+        correctByTopic[question.topic].total += 1;
+        if (isCorrect) correctByTopic[question.topic].correct += 1;
+        state.learningStats.attempted += 1;
+        state.learningStats[isCorrect ? "correct" : "incorrect"] += 1;
+        state.learningStats.attempts.push({ questionId: question.id, topic: question.topic, correct: isCorrect, at: new Date().toISOString() });
+      });
+      const accuracy = Math.round(correct / session.questions.length * 100);
+      const attempt = { score: correct, total: session.questions.length, accuracy, timeTaken, completedAt: new Date().toISOString(), weakTopics: Object.entries(correctByTopic).filter(([, result]) => result.correct < result.total).map(([topic]) => topic) };
+      state.learningStats.attempts.push({ kind: "mock", ...attempt });
+      state.learningStats.attempts = state.learningStats.attempts.slice(-500);
+      state.achievements = state.achievements || [];
+      if (!state.achievements.some(item => item.id === "mock:first")) state.achievements.push({ id: "mock:first", title: "First mock test", issuer: "Launchpad practice", date: attempt.completedAt.slice(0, 7), detail: `Scored ${accuracy}% on your first mock test.` });
+      recordActivity("mock test", "Placement mock test", Math.ceil(timeTaken / 60));
+      const completedQuestionCount = new Set(state.learningStats.attempts.filter(item => item.kind !== "mock").map(item => item.questionId)).size;
+      if (completedQuestionCount >= 5) awardAchievement("five-practice-questions", "Five unique practice questions", "Attempted at least five distinct practice questions.");
+      persistActiveProfile();
+      updateProgress();
+      renderMockQuestion();
+      if (fromTimer) showToast("Time is up. Your mock test was submitted automatically.");
+    }
+    function renderMockResults(container, session) {
+      const attempt = state.learningStats.attempts.filter(item => item.kind === "mock").slice(-1)[0];
+      if (!attempt) return;
+      const weak = attempt.weakTopics.length ? `Focus next on: ${attempt.weakTopics.join(", ")}.` : "Great work — no missed topic in this short test.";
+      container.innerHTML = `<strong>Result: ${attempt.score}/${attempt.total} · ${attempt.accuracy}% accuracy</strong><br>Time taken: ${formatTime(attempt.timeTaken)}. ${escapeHTML(weak)}${session.review.size ? ` ${session.review.size} question(s) were marked for review.` : ""}`;
+    }
+    function renderCompanies() {
+      const grid = document.getElementById("company-grid");
+      if (!grid) return;
+      const query = (document.getElementById("company-search").value || "").trim().toLowerCase();
+      const companies = learningData.companies.filter(company => company.name.toLowerCase().includes(query));
+      grid.innerHTML = companies.length ? companies.map(company => `<article class="company-card"><h4>${escapeHTML(company.name)}</h4><p>${escapeHTML(company.note)}</p><p><strong>Prepare:</strong> Aptitude · Logical reasoning · Verbal · Coding · Technical · HR</p><div class="learning-resource-links"><a href="${escapeHTML(company.careers)}" target="_blank" rel="noopener noreferrer">Official careers ↗</a><a href="${escapeHTML(company.prep)}" target="_blank" rel="noopener noreferrer">Preparation resource ↗</a></div><button class="save-cgpa" data-company-practice="${escapeHTML(company.name)}">Practice a mixed set</button></article>`).join("") : '<p class="storage-note">No companies match your search.</p>';
+      grid.querySelectorAll("[data-company-practice]").forEach(button => button.addEventListener("click", () => {
+        learningState.tab = "mock";
+        document.querySelectorAll("[data-learning-tab]").forEach(tab => tab.classList.toggle("active", tab.dataset.learningTab === "mock"));
+        renderLearningHub();
+        const start = document.getElementById("begin-mock-test");
+        if (start) {
+          document.getElementById("mock-category").value = "All categories";
+          document.getElementById("mock-availability").textContent = `General practice for ${button.dataset.companyPractice}; questions are not claimed to be from an actual company exam. ${availableMockQuestions().length} questions available.`;
+          start.focus();
+        }
+      }));
+    }
+    document.getElementById("open-assessment").addEventListener("click", () => { renderSkillCheck(); openModal("skill-check-modal"); });
+    document.getElementById("submit-skill-check").addEventListener("click", async () => {
+      const answers = Array.from(document.querySelectorAll("#skill-check-questions select"));
+      if (answers.some(answer => answer.value === "")) {
+        showToast("Answer all six questions to score your skill check.");
+        return;
+      }
+      let serverScores = null;
+      if (backendEnabled) {
+        if (!state || !activeEmail) { showToast("Create or log in to a profile before submitting an assessment."); return; }
+        try {
+          serverScores = {};
+          for (const key of Object.keys(skillConfig)) {
+            const submitted = answers.filter(answer => answer.dataset.checkSkill === key).map(answer => ({
+              question_id: ({ dsa: ["dsa-stack", "dsa-binary"], web: ["web-nav", "web-grid"], aptitude: ["apt-discount", "apt-work"] })[key][Number(answer.dataset.checkIndex)],
+              selected_option: Number(answer.value)
+            }));
+            const result = await backendRequest("/api/assessments", { method: "POST", body: JSON.stringify({ skill: key, answers: submitted }) });
+            serverScores[key] = result.score;
+          }
+        } catch (error) {
+          console.error("The server could not score this assessment.", error);
+          showToast(`Assessment was not saved: ${error.message}`);
+          return;
+        }
+      } else {
+        showToast("Run the Flask app to have assessment answers checked and scored by the server.");
+        return;
+      }
+      for (const [key, config] of Object.entries(skillConfig)) {
+        state.skillScores[key] = serverScores[key];
+      }
+      const previousAssessment = state.assessmentHistory.at(-1);
+      const scores = { ...state.skillScores };
+      state.assessmentHistory.push({ scores, at: new Date().toISOString() });
+      state.assessmentHistory = state.assessmentHistory.slice(-100);
+      if (state.assessmentHistory.length === 1) awardAchievement("first-assessment", "First assessment", "Completed the six-question skill check.");
+      for (const key of Object.keys(skillConfig)) {
+        if (previousAssessment && scores[key] - previousAssessment.scores[key] >= 20) {
+          awardAchievement(`assessment-improvement:${key}`, `${skillConfig[key].name} assessment improvement`, `Improved by ${scores[key] - previousAssessment.scores[key]} points across consecutive skill checks.`);
+        }
+      }
+      recordActivity("assessment", "Quick skill check", 0);
+      persistActiveProfile();
+      updateProgress();
+      const feedback = document.getElementById("skill-check-feedback");
+      feedback.textContent = `Your scores — DSA ${state.skillScores.dsa}%, Web ${state.skillScores.web}%, Aptitude ${state.skillScores.aptitude}%. Your learning recommendations and readiness estimate have been updated. These short checks are a guide, not a formal certification.`;
+      feedback.classList.add("show");
+    });
+    document.querySelectorAll("[data-learning-tab]").forEach(button => button.addEventListener("click", () => setLearningTab(button.dataset.learningTab)));
+    document.getElementById("auth-switch").addEventListener("click", () => openAuth(authMode === "create" ? "signin" : "create"));
+    document.getElementById("saved-account").addEventListener("change", event => {
+      if (event.target.value) document.getElementById("auth-email").value = event.target.value;
+    });
+    document.getElementById("auth-form").addEventListener("submit", event => {
+      event.preventDefault();
+      const email = document.getElementById("auth-email").value.trim().toLowerCase();
+      const error = document.getElementById("auth-error");
+      if (!email) return;
+      if (authMode === "create") {
+        if (accounts[email]) { error.textContent = "A profile with this email already exists in this browser. Sign in instead."; return; }
+        const name = document.getElementById("auth-name").value.trim();
+        if (!name) { error.textContent = "Please add your name to create a profile."; return; }
+        const assessments = {};
+        for (const key of Object.keys(skillConfig)) assessments[key] = Number(document.getElementById(`assess-${key}`).value);
+        accounts[email] = { ...baseState, name, branch: document.getElementById("auth-branch").value.trim() || "Not specified", role: document.getElementById("auth-role").value.trim(), assessments, skillScores: { ...baseState.skillScores }, tasks: [], achievements: [] };
+        if (!persistAccounts()) return;
+        loadProfile(email);
+      } else if (!accounts[email]) {
+        error.textContent = "No profile found for that email in this browser. Create a new profile here.";
+      } else loadProfile(email);
+    });
+    document.getElementById("account-trigger").addEventListener("click", () => {
+      const popover = document.getElementById("account-popover");
+      popover.classList.toggle("open");
+      document.getElementById("account-trigger").setAttribute("aria-expanded", String(popover.classList.contains("open")));
+    });
+    async function signOut() {
+      if (backendEnabled) {
+        try {
+          await backendRequest("/api/session/logout", { method: "POST" });
+          backendCsrfToken = "";
+          backendProfileEmail = "";
+          localStorage.removeItem(backendLabelKey);
+        } catch (error) {
+          console.error("Could not end the server profile session.", error);
+          showToast(`Could not sign out from the server: ${error.message}`);
+          return;
+        }
+      }
+      clearInterval(interviewTimer);
+      try { localStorage.removeItem(activeKey); }
+      catch (error) { console.error("Could not clear the active profile.", error); }
+      document.getElementById("account-popover").classList.remove("open");
+      document.getElementById("account-trigger").setAttribute("aria-expanded", "false");
+      state = null;
+      activeEmail = "";
+      openAuth(Object.keys(accounts).length ? "signin" : "create");
+    }
+    document.getElementById("login-account").addEventListener("click", async () => {
+      await signOut();
+    });
+    document.getElementById("create-account").addEventListener("click", () => {
+      document.getElementById("account-popover").classList.remove("open");
+      document.getElementById("account-trigger").setAttribute("aria-expanded", "false");
+      openAuth("create");
+    });
+    document.getElementById("logout-account").addEventListener("click", signOut);
+    document.getElementById("save-assessment").addEventListener("click", () => {
+      const dailyMinutes = Number(document.getElementById("edit-daily-minutes").value);
+      const semesterInput = document.getElementById("edit-semester").value;
+      const semester = semesterInput ? Number(semesterInput) : "";
+      const branch = document.getElementById("edit-branch").value.trim();
+      if (!branch || branch.length > 100 || !Number.isInteger(dailyMinutes) || dailyMinutes < 15 || dailyMinutes > 300 || (semesterInput && (!Number.isInteger(semester) || semester < 1 || semester > 12))) {
+        showToast("Add a branch, a daily study target of 15–300 minutes, and a semester from 1–12.");
+        return;
+      }
+      for (const key of Object.keys(skillConfig)) {
+        const updated = Number(document.getElementById(`edit-assess-${key}`).value);
+        state.assessments[key] = updated;
+      }
+      state.role = document.getElementById("edit-target-role").value.trim().slice(0, 100);
+      state.branch = branch;
+      state.semester = semester;
+      state.dailyStudyMinutes = dailyMinutes;
+      persistActiveProfile();
+      closeModals();
+      updateProfileUI();
+      updateProgress();
+      showToast("Your learning plan now matches your updated starting points.");
+    });
+    document.getElementById("save-cgpa").addEventListener("click", () => {
+      const input = document.getElementById("cgpa-input");
+      const value = Number(input.value);
+      if (!input.value || !Number.isFinite(value) || value < 0 || value > 10) {
+        showToast("Enter a CGPA between 0 and 10.");
+        input.focus();
+        return;
+      }
+      state.cgpa = value;
+      persistActiveProfile();
+      updateProgress();
+      showToast("CGPA saved to your placement snapshot.");
+    });
+    function openModal(id) { document.getElementById(id).classList.add("open"); }
+    function closeModals() { document.querySelectorAll(".modal-backdrop").forEach(modal => modal.classList.remove("open")); }
+    let interviewTimer = null;
+    let interviewResultViewId = "";
+    const interviewEngine = window.LaunchpadInterview;
+    const serverInterviewQuestionIds = new Set(["fundamentals-complexity", "dsa-arrays", "dsa-two-pointers", "web-html", "web-async", "fundamentals-sql", "fundamentals-ai", "aptitude-probability", "hr-star"]);
+    function interviewQuestionCount(session) {
+      return session.questions.length;
+    }
+    function interviewCurrentIndex(session) {
+      return Math.min(session.currentIndex, Math.max(0, session.questions.length - 1));
+    }
+    function renderInterviewWorkspace(resultId = "") {
+      interviewResultViewId = resultId;
+      const container = document.getElementById("interview-content");
+      if (state.interviewSession && !resultId) {
+        renderInterviewQuestion();
+        startInterviewTimer();
+        return;
+      }
+      clearInterval(interviewTimer);
+      const result = resultId ? state.interviewHistory.find(item => item.id === resultId) : null;
+      if (result) {
+        renderInterviewResult(container, result);
+        return;
+      }
+      renderInterviewSetup(container);
+    }
+    function renderInterviewSetup(container) {
+      const roles = ["Software Developer", "Data Analyst", "AI Engineer", "Web Developer", "Custom role"];
+      const categories = ["Mixed", "Technical", "DSA", "Web Development", "Aptitude", "HR/Behavioral"];
+      const difficulties = ["Beginner", "Intermediate", "Advanced", "All levels"];
+      const activeSession = state.interviewSession;
+      container.innerHTML = `<div class="interview-setup"><div class="interview-warning"><strong>Rule-based practice coach.</strong> This version does not call an AI model. Scores use transparent server-side keyword coverage; open-ended answers may need human review. Submitted answers and scores ${backendEnabled ? "are checked and stored in the Flask/SQLite backend for this browser session" : "stay in this browser"}.</div>${activeSession ? `<div class="interview-report-card"><strong>Interview in progress</strong><p>${escapeHTML(activeSession.role)} · ${escapeHTML(activeSession.category)} · Question ${interviewCurrentIndex(activeSession) + 1} of ${interviewQuestionCount(activeSession)}. Your draft is saved on this device.</p><button class="primary-button" id="resume-interview">Resume interview →</button></div>` : ""}<div><h3 style="margin:0;font-size:13px">Set up a practice interview</h3><p class="storage-note" style="margin-top:4px">Questions are selected without repeats within a session. Limited category/difficulty filters may produce fewer questions than requested.</p></div><div class="interview-setup-grid"><label>Target role<select id="interview-role">${roles.map(role => `<option${role === (state.role && roles.includes(state.role) ? state.role : "Software Developer") ? " selected" : ""}>${escapeHTML(role)}</option>`).join("")}</select></label><label>Custom target role<input id="interview-custom-role" maxlength="100" placeholder="e.g. Product Engineer" value="${escapeHTML(roles.includes(state.role) ? "" : state.role || "")}"></label><label>Interview category<select id="interview-category">${categories.map(item => `<option>${escapeHTML(item)}</option>`).join("")}</select></label><label>Difficulty<select id="interview-difficulty">${difficulties.map(item => `<option>${escapeHTML(item)}</option>`).join("")}</select></label><label>Number of questions<select id="interview-count"><option>5</option><option>10</option><option>15</option></select></label><label>Optional duration<select id="interview-duration"><option value="0">No timer</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></label></div><p class="storage-note" id="interview-availability" aria-live="polite"></p><div class="hero-actions" style="margin-top:0"><button class="primary-button" id="begin-interview">Start interview →</button></div><section><h3 style="margin:4px 0;font-size:12px">Previous practice sessions</h3><div id="interview-history" class="interview-history"></div></section></div>`;
+      const updateAvailable = () => {
+        const filterRole = document.getElementById("interview-role").value;
+        const category = document.getElementById("interview-category").value;
+        const difficulty = document.getElementById("interview-difficulty").value;
+        const requested = Number(document.getElementById("interview-count").value);
+        const available = interviewEngine.selectQuestions({ role: filterRole, category, difficulty, count: interviewEngine.questions.length })
+          .filter(question => !backendEnabled || serverInterviewQuestionIds.has(question.id));
+        document.getElementById("interview-availability").textContent = `${available.length} matching question(s) available. This session will contain ${Math.min(requested, available.length)} question(s).`;
+      };
+      ["interview-role", "interview-category", "interview-difficulty", "interview-count"].forEach(id => document.getElementById(id).addEventListener("change", updateAvailable));
+      document.getElementById("interview-role").addEventListener("change", () => {
+        document.getElementById("interview-custom-role").disabled = document.getElementById("interview-role").value !== "Custom role";
+      });
+      document.getElementById("interview-custom-role").disabled = document.getElementById("interview-role").value !== "Custom role";
+      updateAvailable();
+      document.getElementById("begin-interview").addEventListener("click", beginInterview);
+      const resume = document.getElementById("resume-interview");
+      if (resume) resume.addEventListener("click", () => renderInterviewWorkspace());
+      renderInterviewHistory(container.querySelector("#interview-history"));
+    }
+    function renderInterviewHistory(container) {
+      if (!container) return;
+      const history = [...state.interviewHistory].reverse();
+      container.innerHTML = history.length ? history.map(item => `<button type="button" data-interview-history="${escapeHTML(item.id)}"><span>${escapeHTML(item.role)} · ${escapeHTML(item.category)} · ${new Date(item.completedAt).toLocaleDateString()}</span><strong>${escapeHTML(item.score)}%</strong></button>`).join("") : '<p class="analytics-empty">No saved interviews yet. Complete a practice session to build your review history.</p>';
+      container.querySelectorAll("[data-interview-history]").forEach(button => button.addEventListener("click", () => renderInterviewWorkspace(button.dataset.interviewHistory)));
+    }
+    async function beginInterview() {
+      const roleFilter = document.getElementById("interview-role").value;
+      const customRole = document.getElementById("interview-custom-role").value.trim();
+      if (roleFilter === "Custom role" && !customRole) {
+        showToast("Enter a target role for your custom interview.");
+        document.getElementById("interview-custom-role").focus();
+        return;
+      }
+      const role = roleFilter === "Custom role" ? customRole.slice(0, 100) : roleFilter;
+      const category = document.getElementById("interview-category").value;
+      const difficulty = document.getElementById("interview-difficulty").value;
+      const count = Number(document.getElementById("interview-count").value);
+      const durationSeconds = Number(document.getElementById("interview-duration").value) * 60;
+      const seenQuestionIds = state.interviewHistory.flatMap(item => (item.questions || []).map(entry => entry.question.id));
+      const candidates = interviewEngine.selectQuestions({ role: roleFilter, category, difficulty, count: interviewEngine.questions.length, previousIds: seenQuestionIds })
+        .filter(question => serverInterviewQuestionIds.has(question.id));
+      const questions = candidates.sort(() => Math.random() - 0.5).slice(0, count);
+      if (!questions.length) {
+        showToast("No questions match these options. Try Mixed or All levels.");
+        return;
+      }
+      let serverSessionId = "";
+      if (backendEnabled) {
+        const serverCategory = ({ Mixed: "Mixed interview", Technical: "Programming", "HR/Behavioral": "HR and behavioral interviews" })[category] || category;
+        try {
+          const created = await backendRequest("/api/interviews", {
+            method: "POST",
+            body: JSON.stringify({
+              target_role: role, category: serverCategory, difficulty,
+              question_count: questions.length, question_ids: questions.map(question => question.id),
+              duration_seconds: Number(document.getElementById("interview-duration").value) * 60
+            })
+          });
+          serverSessionId = created.id;
+        } catch (error) {
+          console.error("The server could not create this interview.", error);
+          showToast(`Interview was not started: ${error.message}`);
+          return;
+        }
+      }
+      const startedAt = Date.now();
+      state.role = role;
+      state.interviewSession = {
+        id: `interview-${startedAt}-${Math.random().toString(36).slice(2, 8)}`,
+        serverSessionId,
+        role, category, difficulty, questions, answers: Array(questions.length).fill(""),
+        evaluations: Array(questions.length).fill(null), currentIndex: 0,
+        startedAt, durationSeconds, deadline: durationSeconds ? startedAt + durationSeconds * 1000 : null
+      };
+      interviewResultViewId = "";
+      persistActiveProfile();
+      updateProfileUI();
+      updateProgress();
+      renderInterviewQuestion();
+      startInterviewTimer();
+    }
+    function startInterviewTimer() {
+      clearInterval(interviewTimer);
+      const session = state.interviewSession;
+      if (!session || !session.deadline) return;
+      const sessionId = session.id;
+      const sessionEmail = activeEmail;
+      const tick = () => {
+        if (!state || activeEmail !== sessionEmail || !state.interviewSession || state.interviewSession.id !== sessionId) { clearInterval(interviewTimer); return; }
+        const remaining = Math.ceil((session.deadline - Date.now()) / 1000);
+        const timer = document.getElementById("interview-timer");
+        if (timer) timer.textContent = formatTime(remaining);
+        if (remaining <= 0) {
+          clearInterval(interviewTimer);
+          finishInterview({ auto: true });
+        }
+      };
+      tick();
+      interviewTimer = setInterval(tick, 1000);
+    }
+    function renderInterviewQuestion() {
+      const session = state.interviewSession;
+      if (!session) return;
+      const container = document.getElementById("interview-content");
+      const index = interviewCurrentIndex(session);
+      const question = session.questions[index];
+      if (!question) {
+        container.innerHTML = '<p class="interview-warning">This saved question set is not available. Start a new interview.</p>';
+        return;
+      }
+      const evaluation = session.evaluations[index];
+      const answered = session.evaluations.filter(Boolean).length;
+      const percentage = Math.round((index + 1) / session.questions.length * 100);
+      const feedback = evaluation ? `<section class="interview-feedback"><div class="interview-scoreline"><h4>Rule-based feedback</h4><strong>${escapeHTML(evaluation.score)}/100</strong></div>${evaluation.method ? `<p><strong>Scoring:</strong> ${escapeHTML(evaluation.method)}.</p>` : `<p><strong>Criteria:</strong> Correctness ${escapeHTML(evaluation.dimensions.correctness)} · Relevance ${escapeHTML(evaluation.dimensions.relevance)} · Reasoning ${escapeHTML(evaluation.dimensions.reasoning)} · Completeness ${escapeHTML(evaluation.dimensions.completeness)} · Communication ${escapeHTML(evaluation.dimensions.communication)}</p>`}<p><strong>What went well:</strong> ${evaluation.strengths.length ? escapeHTML(evaluation.strengths.join(", ")) : "Keep building a focused, supported response."}</p><p><strong>Missing / worth checking:</strong> ${evaluation.missing.length ? escapeHTML(evaluation.missing.join(", ")) : "No checklist concepts were missed."}</p><p><strong>Suggested improved answer outline:</strong> ${escapeHTML(evaluation.outline || evaluation.suggested_answer || "")}</p><p><strong>Revise next:</strong> ${escapeHTML(evaluation.nextTopic)}</p></section>` : "";
+      container.innerHTML = `<div class="interview-panel"><div class="interview-warning">Rule-based evaluator · transparent heuristic · not an AI-generated semantic score. Do not include sensitive personal information in practice answers.</div><div class="interview-question-head"><span>${escapeHTML(session.role)} · ${escapeHTML(question.category)} · ${escapeHTML(question.difficulty)}</span>${session.deadline ? '<strong class="interview-timer" id="interview-timer"></strong>' : '<span>No timer</span>'}</div><div class="interview-progress-row"><span>Question ${index + 1} of ${session.questions.length} · ${answered} answered</span><span>${percentage}%</span></div><div class="interview-progress-track" role="progressbar" aria-label="Interview question progress" aria-valuemin="0" aria-valuemax="${session.questions.length}" aria-valuenow="${index + 1}"><span style="width:${percentage}%"></span></div><h3 class="interview-question">${escapeHTML(question.prompt)}</h3><label for="interview-answer" class="storage-note">Your answer (saved on this device as you type)</label><textarea id="interview-answer" class="interview-answer" maxlength="6000" placeholder="Explain your thinking. For technical questions, include assumptions, approach, and complexity; for behavioral questions, use a real example.">${escapeHTML(session.answers[index] || "")}</textarea>${feedback}<p id="interview-answer-error" class="auth-error" role="status"></p><div class="hero-actions" style="margin-top:0">${evaluation ? (index === session.questions.length - 1 ? '<button class="primary-button" id="interview-next">View results →</button>' : '<button class="primary-button" id="interview-next">Next question →</button>') : '<button class="primary-button" id="submit-interview-answer">Submit answer →</button>'}<button class="ghost-button" id="end-interview">End interview</button></div></div>`;
+      const timer = document.getElementById("interview-timer");
+      if (timer && session.deadline) timer.textContent = formatTime(Math.ceil((session.deadline - Date.now()) / 1000));
+      const answerInput = document.getElementById("interview-answer");
+      answerInput.disabled = Boolean(evaluation);
+      answerInput.addEventListener("input", () => {
+        session.answers[index] = answerInput.value;
+        persistActiveProfile();
+      });
+      const submit = document.getElementById("submit-interview-answer");
+      if (submit)       submit.addEventListener("click", async () => {
+        if (session.evaluations[index]) return;
+        const answer = answerInput.value.trim();
+        if (!answer) {
+          document.getElementById("interview-answer-error").textContent = "Write an answer before submitting this question.";
+          answerInput.focus();
+          return;
+        }
+        session.answers[index] = answer;
+        if (backendEnabled && session.serverSessionId) {
+          try {
+            const result = await backendRequest(`/api/interviews/${encodeURIComponent(session.serverSessionId)}/answers`, {
+              method: "POST", body: JSON.stringify({ question_id: question.id, answer })
+            });
+            session.evaluations[index] = { ...result.feedback, score: result.score, nextTopic: result.feedback.nextTopic || result.feedback.revision_topic };
+          } catch (error) {
+            console.error("The server could not save this interview answer.", error);
+            document.getElementById("interview-answer-error").textContent = `Answer was not submitted: ${error.message}`;
+            return;
+          }
+        } else {
+          session.evaluations[index] = interviewEngine.evaluateAnswer(question, answer);
+        }
+        persistActiveProfile();
+        renderInterviewQuestion();
+      });
+      const next = document.getElementById("interview-next");
+      if (next) next.addEventListener("click", () => {
+        if (index === session.questions.length - 1) finishInterview();
+        else {
+          session.currentIndex = index + 1;
+          persistActiveProfile();
+          renderInterviewQuestion();
+        }
+      });
+      document.getElementById("end-interview").addEventListener("click", () => finishInterview({ confirmEarly: true }));
+    }
+    async function finishInterview({ confirmEarly = false, auto = false } = {}) {
+      const session = state.interviewSession;
+      if (!session || session.finishing) return;
+      const allAnswered = session.evaluations.every(Boolean);
+      if (confirmEarly && !allAnswered && !window.confirm("End this interview now? Unanswered questions will not be scored.")) return;
+      let serverScore = null;
+      if (backendEnabled && session.serverSessionId) {
+        session.finishing = true;
+        try {
+          const completed = await backendRequest(`/api/interviews/${encodeURIComponent(session.serverSessionId)}/complete`, { method: "POST", body: "{}" });
+          serverScore = completed.session.score;
+        } catch (error) {
+          session.finishing = false;
+          console.error("The server could not complete this interview.", error);
+          showToast(`Interview result was not finalized: ${error.message}`);
+          return;
+        }
+      }
+      clearInterval(interviewTimer);
+      const result = interviewEngine.summarizeSession(session);
+      if (serverScore !== null) result.score = serverScore;
+      result.serverSessionId = session.serverSessionId || "";
+      result.durationSeconds = Math.max(0, Math.round((Date.now() - session.startedAt) / 1000));
+      if (session.durationSeconds) result.durationSeconds = Math.min(result.durationSeconds, session.durationSeconds);
+      state.interviewHistory.push(result);
+      state.interviewHistory = state.interviewHistory.slice(-100);
+      state.interviewSession = null;
+      state.lastInterviewResult = result.id;
+      if (state.interviewHistory.length === 1) awardAchievement("first-mock-interview", "First mock interview", `Completed your first rule-based practice interview with a score of ${result.score}%.`);
+      recordActivity("interview", `${result.role} interview practice`, Math.ceil(result.durationSeconds / 60));
+      state.studyMinutes += Math.ceil(result.durationSeconds / 60);
+      persistActiveProfile();
+      updateProgress();
+      renderInterviewWorkspace(result.id);
+      if (auto) showToast("Interview time is up. Your answers have been scored and saved on this device.");
+    }
+    function renderInterviewResult(container, result) {
+      const categoryScores = Object.entries(result.categoryScores || {});
+      const questionResults = (result.questions || []).map((item, index) => `<details class="interview-report-card"><summary style="cursor:pointer;font-size:10px"><strong>Q${index + 1} · ${escapeHTML(item.question.topic)} · ${escapeHTML(item.evaluation.score)}/100</strong></summary><p>${escapeHTML(item.question.prompt)}</p><p><strong>Your answer:</strong> ${escapeHTML(item.answer)}</p><p><strong>Missing:</strong> ${escapeHTML(item.evaluation.missing.join(", ") || "No checklist concepts missed.")}</p><p><strong>Suggested outline:</strong> ${escapeHTML(item.evaluation.outline)}</p></details>`).join("");
+      container.innerHTML = `<div class="interview-report"><div class="interview-warning"><strong>Rule-based score · not AI-generated.</strong> The score is a structured practice signal, not a guarantee of technical correctness or hiring outcome.</div><div class="interview-report-card"><div class="interview-scoreline"><h3>${escapeHTML(result.role)} · ${escapeHTML(result.category)}</h3><strong>${escapeHTML(result.score)}%</strong></div><p>${escapeHTML(result.answered)} of ${escapeHTML(result.total)} questions answered · ${formatTime(Number(result.durationSeconds) || 0)} practice time · ${new Date(result.completedAt).toLocaleString()}</p><p><strong>Strengths:</strong> ${escapeHTML(result.strengths.join(", ") || "Build consistent examples and explanations.")}</p><p><strong>Weak areas:</strong> ${escapeHTML(result.weakTopics.join(", ") || "No low-scoring topic in answered questions.")}</p><p><strong>Recommended next review:</strong> ${escapeHTML(result.nextTopics.join(", ") || "Continue with a higher difficulty or a different category.")}</p></div><div class="interview-report-grid"><section class="interview-report-card"><h3>Category performance</h3>${categoryScores.length ? categoryScores.map(([category, score]) => `<p>${escapeHTML(category)}: <strong>${escapeHTML(score)}%</strong></p>`).join("") : '<p>No questions were answered.</p>'}</section><section class="interview-report-card"><h3>Suggested next practice</h3><p>Review the lowest scoring topic above, then retry a new mixed interview. Practice feedback uses keyword and response-structure heuristics.</p><button class="text-link" id="interview-report-new">Start another interview →</button></section></div><section><h3 style="font-size:12px">Question-by-question review</h3><div class="interview-report">${questionResults || '<p class="analytics-empty">No answer was submitted in this session.</p>'}</div></section><div class="hero-actions" style="margin-top:0"><button class="ghost-button" id="interview-view-history">View all saved sessions</button><button class="ghost-button" id="interview-new-session">New interview</button></div></div>`;
+      document.getElementById("interview-report-new").addEventListener("click", () => renderInterviewWorkspace());
+      document.getElementById("interview-view-history").addEventListener("click", () => renderInterviewSetup(container));
+      document.getElementById("interview-new-session").addEventListener("click", () => renderInterviewWorkspace());
+    }
+    document.getElementById("start-interview").addEventListener("click", () => {
+      renderInterviewWorkspace();
+      openModal("interview-modal");
+    });
+    document.getElementById("build-resume").addEventListener("click", () => { updateResumeLists(); openModal("resume-modal"); });
+    document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", closeModals));
+    document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.addEventListener("click", event => { if (event.target === backdrop) closeModals(); }));
+    document.addEventListener("keydown", event => { if (event.key === "Escape") closeModals(); });
+    function resumeText() {
+      return [
+        state.name,
+        state.role && `Target role: ${state.role}`,
+        state.objective && `CAREER OBJECTIVE\n${state.objective}`,
+        state.education && `EDUCATION\n${state.education}`,
+        state.cgpa && `CGPA: ${Number(state.cgpa).toFixed(2)} / 10`,
+        state.skills && `TECHNICAL SKILLS\n${state.skills}`,
+        state.project && `PROJECTS\n${state.project}`,
+        state.achievements.length && `ACHIEVEMENTS & CERTIFICATIONS\n${state.achievements.map(item => `• ${item.title}${item.issuer ? ` — ${item.issuer}` : ""}${item.date ? ` (${item.date})` : ""}${item.detail ? `\n  ${item.detail}` : ""}`).join("\n")}`
+      ].filter(Boolean).join("\n\n");
+    }
+    document.getElementById("generate-resume").addEventListener("click", () => {
+      state.name = document.getElementById("resume-name").value.trim().slice(0, 100) || state.name;
+      state.role = document.getElementById("resume-role").value.trim().slice(0, 100);
+      state.project = document.getElementById("resume-project").value.trim().slice(0, 3000);
+      state.objective = document.getElementById("resume-objective").value.trim();
+      state.education = document.getElementById("resume-education").value.trim();
+      state.skills = document.getElementById("resume-skills").value.trim();
+      persistActiveProfile();
+      updateProfileUI();
+      refreshProfileInsights();
+      const preview = document.getElementById("resume-preview");
+      const previewSections = [
+        state.role && `<strong>Target role</strong><br>${escapeHTML(state.role)}`,
+        state.objective && `<strong>Career objective</strong><br>${escapeHTML(state.objective).replace(/\n/g, "<br>")}`,
+        state.education && `<strong>Education</strong><br>${escapeHTML(state.education)}`,
+        state.cgpa && `<strong>CGPA</strong><br>${Number(state.cgpa).toFixed(2)} / 10`,
+        state.skills && `<strong>Technical skills</strong><br>${escapeHTML(state.skills)}`,
+        state.project && `<strong>Projects</strong><br>${escapeHTML(state.project).replace(/\n/g, "<br>")}`,
+        state.achievements.length && `<strong>Achievements &amp; certifications</strong><br>${state.achievements.map(item => escapeHTML(`${item.title}${item.issuer ? ` — ${item.issuer}` : ""}${item.date ? ` (${item.date})` : ""}${item.detail ? `: ${item.detail}` : ""}`)).join("<br>")}`
+      ].filter(Boolean);
+      preview.innerHTML = `<strong>${escapeHTML(state.name)}</strong><br>${previewSections.join("<br><br>")}<br><br><span style="color:#7b8379">Preview · Only include information you can verify and discuss.</span>`;
+      preview.classList.add("show");
+    });
+    document.getElementById("resume-name").addEventListener("change", () => { state.name = document.getElementById("resume-name").value.trim().slice(0, 100) || state.name; persistActiveProfile(); updateProfileUI(); });
+    document.getElementById("resume-role").addEventListener("change", () => { state.role = document.getElementById("resume-role").value.trim().slice(0, 100); persistActiveProfile(); updateProfileUI(); updateProgress(); });
+    document.getElementById("resume-project").addEventListener("change", () => { state.project = document.getElementById("resume-project").value.trim().slice(0, 3000); persistActiveProfile(); refreshProfileInsights(); });
+    for (const [id, key] of [["resume-objective", "objective"], ["resume-education", "education"], ["resume-skills", "skills"]]) {
+      document.getElementById(id).addEventListener("change", () => { state[key] = document.getElementById(id).value.trim().slice(0, 1500); persistActiveProfile(); });
+    }
+    document.getElementById("download-resume").addEventListener("click", () => {
+      state.name = document.getElementById("resume-name").value.trim() || state.name;
+      state.role = document.getElementById("resume-role").value.trim().slice(0, 100);
+      state.project = document.getElementById("resume-project").value.trim().slice(0, 3000);
+      state.objective = document.getElementById("resume-objective").value.trim().slice(0, 1500);
+      state.education = document.getElementById("resume-education").value.trim().slice(0, 500);
+      state.skills = document.getElementById("resume-skills").value.trim().slice(0, 1000);
+      persistActiveProfile();
+      refreshProfileInsights();
+      const url = URL.createObjectURL(new Blob([resumeText()], { type: "text/plain;charset=utf-8" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${(state.name || "student").replace(/[^a-z0-9-_]+/gi, "-")}-resume.txt`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+    document.getElementById("download-formatted-resume").addEventListener("click", () => {
+      state.name = document.getElementById("resume-name").value.trim() || state.name;
+      state.role = document.getElementById("resume-role").value.trim().slice(0, 100);
+      state.project = document.getElementById("resume-project").value.trim().slice(0, 3000);
+      persistActiveProfile();
+      const achievements = state.achievements.length
+        ? state.achievements.map(item => `<li><strong>${escapeHTML(item.title)}</strong>${item.issuer ? ` — ${escapeHTML(item.issuer)}` : ""}${item.date ? ` <span>(${escapeHTML(item.date)})</span>` : ""}${item.detail ? `<p>${escapeHTML(item.detail)}</p>` : ""}</li>`).join("")
+        : "";
+      const project = state.project.trim() ? `<p>${escapeHTML(state.project).replace(/\n/g, "<br>")}</p>` : "";
+      const resumeHTML = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHTML(state.name)} — Resume</title><style>*{box-sizing:border-box}body{max-width:800px;margin:40px auto;padding:0 32px;color:#202622;font:15px/1.6 Arial,sans-serif}header{padding-bottom:18px;border-bottom:2px solid #344338}h1{margin:0;font-size:32px}header p{margin:5px 0;color:#60685f}h2{margin:25px 0 7px;padding-bottom:5px;border-bottom:1px solid #dfe4dc;font-size:15px;letter-spacing:.08em;text-transform:uppercase}section p,li{margin:6px 0}ul{padding-left:20px}li p{margin:3px 0;color:#555}@media print{body{margin:0 auto;padding:0 15px}}</style></head><body><header><h1>${escapeHTML(state.name)}</h1><p>${escapeHTML(state.role || "")} ${state.role && activeEmail ? "·" : ""} ${escapeHTML(activeEmail)}</p>${state.cgpa ? `<p>CGPA: ${Number(state.cgpa).toFixed(2)} / 10</p>` : ""}</header>${state.objective ? `<section><h2>Career objective</h2><p>${escapeHTML(state.objective).replace(/\n/g, "<br>")}</p></section>` : ""}${state.education ? `<section><h2>Education</h2><p>${escapeHTML(state.education)}</p></section>` : ""}${state.skills ? `<section><h2>Technical skills</h2><p>${escapeHTML(state.skills)}</p></section>` : ""}${project ? `<section><h2>Projects</h2>${project}</section>` : ""}${achievements ? `<section><h2>Achievements &amp; certifications</h2><ul>${achievements}</ul></section>` : ""}<p style="margin-top:35px;color:#737b70;font-size:11px">Open this file in a browser and choose Print → Save as PDF to create a PDF copy.</p></body></html>`;
+      const url = URL.createObjectURL(new Blob([resumeHTML], { type: "text/html;charset=utf-8" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${(state.name || "student").replace(/[^a-z0-9-_]+/gi, "-")}-resume.html`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+    document.getElementById("add-achievement").addEventListener("click", () => {
+      const title = document.getElementById("achievement-title").value.trim();
+      if (!title) { showToast("Add an achievement or certification title first."); document.getElementById("achievement-title").focus(); return; }
+      state.achievements.push({ id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, title, issuer: document.getElementById("achievement-issuer").value.trim(), date: document.getElementById("achievement-date").value, detail: document.getElementById("achievement-detail").value.trim() });
+      persistActiveProfile();
+      document.getElementById("achievement-title").value = "";
+      document.getElementById("achievement-issuer").value = "";
+      document.getElementById("achievement-date").value = "";
+      document.getElementById("achievement-detail").value = "";
+      updateResumeLists();
+      refreshProfileInsights();
+      showToast("Achievement added to your resume workspace.");
+    });
+    function openDocumentDB() {
+      return new Promise((resolve, reject) => {
+        if (!("indexedDB" in window)) { reject(new Error("This browser does not support local document storage.")); return; }
+        const request = indexedDB.open("launchpad-local-documents", 1);
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains("documents")) request.result.createObjectStore("documents", { keyPath: "id" });
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error("Could not open local document storage."));
+      });
+    }
+    async function addStoredDocument(file) {
+      const db = await openDocumentDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction("documents", "readwrite");
+        transaction.objectStore("documents").put({ id: `${activeEmail}:${Date.now()}-${Math.random().toString(36).slice(2)}`, email: activeEmail, name: file.name, type: file.type, size: file.size, blob: file });
+        transaction.oncomplete = () => { db.close(); resolve(); };
+        transaction.onerror = () => { db.close(); reject(transaction.error || new Error("Could not save the selected document.")); };
+        transaction.onabort = () => { db.close(); reject(transaction.error || new Error("Document storage was interrupted.")); };
+      });
+    }
+    async function getStudentDocuments() {
+      const db = await openDocumentDB();
+      return new Promise((resolve, reject) => {
+        const request = db.transaction("documents", "readonly").objectStore("documents").getAll();
+        request.onsuccess = () => { db.close(); resolve(request.result.filter(item => item.email === activeEmail)); };
+        request.onerror = () => { db.close(); reject(request.error || new Error("Could not load saved documents.")); };
+      });
+    }
+    async function deleteStoredDocument(id) {
+      const db = await openDocumentDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction("documents", "readwrite");
+        transaction.objectStore("documents").delete(id);
+        transaction.oncomplete = () => { db.close(); resolve(); };
+        transaction.onerror = () => { db.close(); reject(transaction.error || new Error("Could not remove the document.")); };
+      });
+    }
+    function updateResumeLists() { renderAchievements(); renderDocuments(); }
+    function renderAchievements() {
+      const list = document.getElementById("achievement-list");
+      if (!state) return;
+      list.innerHTML = state.achievements.length ? state.achievements.map(item => `<div class="entry-row"><div><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML([item.issuer, item.date, item.detail].filter(Boolean).join(" · "))}</small></div><button data-remove-achievement="${escapeHTML(item.id)}">Remove</button></div>`).join("") : '<p class="storage-note">Your awards and certificates will appear here.</p>';
+      list.querySelectorAll("[data-remove-achievement]").forEach(button => button.addEventListener("click", () => {
+        state.achievements = state.achievements.filter(item => item.id !== button.dataset.removeAchievement);
+        persistActiveProfile();
+        renderAchievements();
+        refreshProfileInsights();
+      }));
+    }
+    async function renderDocuments() {
+      const list = document.getElementById("document-list");
+      if (!state) return;
+      try {
+        const documents = await getStudentDocuments();
+        if (!state || !activeEmail) return;
+        list.innerHTML = documents.length ? documents.map(item => `<div class="entry-row"><div><strong>${escapeHTML(item.name)}</strong><small>${(item.size / 1024).toFixed(0)} KB · ${escapeHTML(item.type || "Document")}</small></div><span><button data-download-document="${escapeHTML(item.id)}">Download</button> <button data-remove-document="${escapeHTML(item.id)}">Remove</button></span></div>`).join("") : '<p class="storage-note">No documents added yet.</p>';
+        list.querySelectorAll("[data-download-document]").forEach(button => button.addEventListener("click", async () => {
+          try {
+            const db = await openDocumentDB();
+            const request = db.transaction("documents", "readonly").objectStore("documents").get(button.dataset.downloadDocument);
+            const record = await new Promise((resolve, reject) => {
+              request.onsuccess = () => resolve(request.result);
+              request.onerror = () => reject(request.error);
+            });
+            db.close();
+            if (!record || record.email !== activeEmail) throw new Error("This document is not available for the active student.");
+            const url = URL.createObjectURL(record.blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = record.name;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          } catch (error) { console.error("Could not download document.", error); showToast("Could not download this document."); }
+        }));
+        list.querySelectorAll("[data-remove-document]").forEach(button => button.addEventListener("click", async () => {
+          try { await deleteStoredDocument(button.dataset.removeDocument); await renderDocuments(); }
+          catch (error) { console.error("Could not remove document.", error); showToast("Could not remove this document."); }
+        }));
+      } catch (error) { console.error("Could not load student documents.", error); list.textContent = "Document storage is unavailable in this browser."; }
+    }
+    document.getElementById("add-documents").addEventListener("click", async () => {
+      const input = document.getElementById("document-input");
+      const files = Array.from(input.files || []);
+      if (!files.length) { showToast("Choose at least one document to add."); return; }
+      const tooLarge = files.find(file => file.size > 5 * 1024 * 1024);
+      if (tooLarge) { showToast(`${tooLarge.name} is larger than the 5 MB per-file limit.`); return; }
+      const allowed = /\.(pdf|doc|docx|png|jpe?g)$/i;
+      const unsupported = files.find(file => !allowed.test(file.name));
+      if (unsupported) { showToast(`${unsupported.name} is not a supported document type.`); return; }
+      try {
+        for (const file of files) await addStoredDocument(file);
+        input.value = "";
+        await renderDocuments();
+        showToast(`${files.length} document${files.length === 1 ? "" : "s"} saved in this browser.`);
+      } catch (error) { console.error("Could not save selected documents.", error); showToast("Could not save documents in this browser."); }
+    });
+    document.getElementById("start-learning").addEventListener("click", () => {
+      document.getElementById("learning-card").scrollIntoView({ behavior: "smooth", block: "start" });
+      const next = document.querySelector('[data-task]');
+      if (next) setTimeout(() => next.focus({ preventScroll: true }), 350);
+      else showToast("You have completed every topic in your personalized learning path.");
+    });
+    document.getElementById("show-week-plan").addEventListener("click", () => showToast("Your next tasks are chosen from your DSA, web, and aptitude starting levels."));
+    document.getElementById("notification-button").addEventListener("click", () => showToast("You're all caught up. Your next step is ready when you are."));
+    document.querySelectorAll(".nav button, [data-nav]").forEach(button => {
+      button.addEventListener("click", () => {
+        const section = button.dataset.section || button.dataset.nav;
+        document.getElementById("breadcrumb-current").textContent = section;
+        document.querySelectorAll(".nav button").forEach(navButton => navButton.classList.toggle("active", navButton.dataset.section === section));
+        if (section === "Learn & Practice") { setLearningTab("dsa"); openModal("learning-modal"); }
+        else if (section === "Resume") { updateResumeLists(); openModal("resume-modal"); }
+        else if (section === "Interviews") { renderInterviewWorkspace(); openModal("interview-modal"); }
+        else if (section === "Learning path" || section === "Practice") document.getElementById("learning-card").scrollIntoView({ behavior: "smooth", block: "start" });
+        else if (section === "Achievements") { updateResumeLists(); openModal("resume-modal"); document.getElementById("achievement-title").focus(); }
+        else if (section === "Settings") {
+          populatePlanSettings();
+          openModal("assessment-modal");
+        }
+        else if (section === "Overview") window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+    function initAccounts() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(accountsKey) || "{}");
+        accounts = saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+      } catch (error) {
+        console.error("Could not load student profiles.", error);
+        accounts = {};
+      }
+      let remembered = "";
+      try { remembered = localStorage.getItem(activeKey) || ""; }
+      catch (error) { console.error("Could not read the active student profile.", error); }
+      if (remembered && accounts[remembered]) loadProfile(remembered);
+      else openAuth(Object.keys(accounts).length ? "signin" : "create");
+    }
+    initAccounts();
+  </script>
+</body>
+</html>
